@@ -8,16 +8,29 @@ export default function AiAssistantDrawer({
   onViewBookDetails
 }) {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('nscc_gemini_api_key') || '');
+  const [backendConfigured, setBackendConfigured] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [tempApiKey, setTempApiKey] = useState(apiKey);
   const [showKeyText, setShowKeyText] = useState(false);
+
+  useEffect(() => {
+    api.getAiStatus()
+      .then(res => {
+        if (res && res.configured) {
+          setBackendConfigured(true);
+        }
+      })
+      .catch(() => {});
+  }, [isOpen]);
+
+  const isGeminiActive = Boolean(apiKey || backendConfigured);
 
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
       content: "👋 Hey there! I'm **Athena**, your library friend here at NSCC! ☕📖\n\nI love talking about books! Tell me about what you've been reading lately, what you loved (or hated!) about it, or what kind of vibe you're in the mood for. We can dissect your favorite plots, debate character arcs, or find the perfect book waiting for you on our college shelves.\n\nWhat's on your reading mind today?",
       recommendations: [],
-      engine: apiKey ? "Gemini 2.0 Flash (Connected)" : "Athena Companion Engine"
+      engine: "Gemini Flash (Google AI Active)"
     }
   ]);
   const [inputPrompt, setInputPrompt] = useState('');
@@ -125,12 +138,12 @@ export default function AiAssistantDrawer({
                 <span className="ai-friend-badge">Library Friend</span>
               </div>
               <span className="ai-drawer-subtitle">
-                {apiKey ? (
+                {isGeminiActive ? (
                   <span className="status-live-pill gemini-active">
-                    <span className="dot-live-green"></span> Gemini 2.0 Flash
+                    <span className="dot-live-green"></span> Gemini Flash (Online)
                   </span>
                 ) : (
-                  <span className="status-live-pill" title="Click ⚙️ to enable Gemini 2.0 Flash">
+                  <span className="status-live-pill" title="Click ⚙️ to enable Gemini Flash">
                     ☕ Companion Engine
                   </span>
                 )}
@@ -139,12 +152,12 @@ export default function AiAssistantDrawer({
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <button
-              className={`ai-settings-btn ${showSettings ? 'active' : ''} ${apiKey ? 'has-key' : ''}`}
+              className={`ai-settings-btn ${showSettings ? 'active' : ''} ${isGeminiActive ? 'has-key' : ''}`}
               onClick={() => {
                 setTempApiKey(apiKey);
                 setShowSettings(!showSettings);
               }}
-              title={apiKey ? "Gemini 2.0 Flash Key Configured (Click to edit)" : "Configure Gemini 2.0 Flash API Key"}
+              title={isGeminiActive ? "Gemini Flash Connected (Click to edit key)" : "Configure Gemini Flash API Key"}
             >
               ⚙️
             </button>

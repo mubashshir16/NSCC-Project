@@ -99,5 +99,7 @@ export const api = {
     aiSuggestCategory: (title, author = "") => request("/ai/categorize", {
         method: "POST",
         body: JSON.stringify({ title, author })
-    })
+    }),
+
+    getAiStatus: () => request("/ai/status")
 };

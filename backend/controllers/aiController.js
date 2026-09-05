@@ -94,18 +94,38 @@ FORMATTING:
                     contents.push({ role: "user", parts: [{ text: message.trim() }] });
                 }
 
-                // Call Gemini 2.0 Flash
-                const response = await ai.models.generateContent({
-                    model: "gemini-2.0-flash",
-                    contents: contents,
-                    config: {
-                        systemInstruction: systemPrompt,
-                        temperature: 0.85,
-                        topP: 0.95
-                    }
-                });
+                // Call Gemini Flash with automatic model fallback (gemini-2.0-flash -> gemini-3.6-flash)
+                let response = null;
+                let activeModelName = "gemini-2.0-flash";
+                const candidateModels = ["gemini-2.0-flash", "gemini-3.6-flash", "gemini-3.7-flash", "gemini-2.5-flash"];
 
-                const replyText = response.text || "I'm thinking about that book! Could you say a bit more about what you enjoyed about it?";
+                for (const modelName of candidateModels) {
+                    try {
+                        response = await ai.models.generateContent({
+                            model: modelName,
+                            contents: contents,
+                            config: {
+                                systemInstruction: systemPrompt,
+                                temperature: 0.85,
+                                topP: 0.95
+                            }
+                        });
+                        activeModelName = modelName;
+                        if (response && response.text) break;
+                    } catch (modelErr) {
+                        const errMsg = modelErr.message || "";
+                        if (errMsg.includes("404") || errMsg.includes("NOT_FOUND") || errMsg.includes("no longer available") || errMsg.includes("not found")) {
+                            continue; // Try next flash model candidate
+                        }
+                        throw modelErr;
+                    }
+                }
+
+                if (!response) {
+                    throw new Error("No available Gemini model responded");
+                }
+
+                const replyText = response.text || "I'm thinking about that book! Could you tell me a bit more about what you enjoyed about it?";
 
                 // Extract any library books referenced in reply
                 const lowerReply = replyText.toLowerCase();
@@ -117,12 +137,12 @@ FORMATTING:
 
                 return res.json({
                     success: true,
-                    engine: "Gemini 2.0 Flash (Google AI)",
+                    engine: `Gemini Flash (${activeModelName})`,
                     reply: replyText,
                     recommendations: matchedBooks.slice(0, 4)
                 });
             } catch (geminiError) {
-                console.warn("Gemini 2.0 Flash API call failed, falling back to local companion engine:", geminiError.message);
+                console.warn("Gemini Flash API call failed, falling back to local companion engine:", geminiError.message);
                 // If it was an authentication error with client key, report helpful hint
                 if (geminiError.message && (geminiError.message.includes("API key not valid") || geminiError.message.includes("403") || geminiError.message.includes("401"))) {
                     return res.json({
@@ -368,8 +388,19 @@ const suggestCategory = async (req, res, next) => {
     });
 };
 
+// 4. AI Service Health & Configuration Status
+const getAiStatus = (req, res) => {
+    const hasKey = Boolean(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
+    res.json({
+        success: true,
+        configured: hasKey,
+        engine: hasKey ? "Gemini Flash (Google AI Active)" : "Athena Companion Engine (Local)"
+    });
+};
+
 module.exports = {
     chatWithLibrarian,
     smartSearch,
-    suggestCategory
+    suggestCategory,
+    getAiStatus
 };
