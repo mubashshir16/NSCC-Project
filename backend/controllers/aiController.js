@@ -8,9 +8,9 @@ try {
     // Falls back to semantic engine
 }
 
-// 1. AI Librarian Chatbot
+// 1. AI Librarian & Reading Companion Chatbot (Powered by Gemini 2.0 Flash)
 const chatWithLibrarian = async (req, res, next) => {
-    const { message, history = [] } = req.body;
+    const { message, history = [], apiKey: clientApiKey } = req.body;
 
     if (!message || !message.trim()) {
         return res.status(400).json({
@@ -20,94 +20,168 @@ const chatWithLibrarian = async (req, res, next) => {
     }
 
     try {
-        // Fetch current catalog context from PostgreSQL
+        // Fetch current live catalog context from PostgreSQL
         const booksResult = await pool.query(
             "SELECT id, title, author, isbn, category, quantity, available_quantity FROM books ORDER BY id ASC"
         );
         const books = booksResult.rows;
-
         const categories = [...new Set(books.map(b => b.category).filter(Boolean))];
 
-        const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+        const apiKey = clientApiKey || req.headers["x-gemini-api-key"] || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
 
-        // If Gemini API key is available, use Gemini 2.5 Flash
+        // If Gemini API key is available and @google/genai is loaded, use Gemini 2.0 Flash
         if (apiKey && GoogleGenAI) {
             try {
                 const ai = new GoogleGenAI({ apiKey });
 
                 const catalogContext = books.map(b => 
-                    `- ID: ${b.id}, Title: "${b.title}", Author: ${b.author}, ISBN: ${b.isbn}, Category: ${b.category}, Available: ${b.available_quantity}/${b.quantity}`
+                    `- ID #${b.id}: "${b.title}" by ${b.author} | ISBN: ${b.isbn} | Category: ${b.category} | Shelf Stock: ${b.available_quantity} available (Total: ${b.quantity})`
                 ).join("\n");
 
-                const systemPrompt = `You are "Athena", the AI Librarian for the NSCC Library Management System.
-You assist students, staff, and faculty with finding textbooks, checking availability, explaining borrowing policies, and giving personalized reading recommendations.
+                const systemPrompt = `You are "Athena", a warm, witty, enthusiastic, and thoughtful college library friend and reading companion at the NSCC Library.
 
-Library Policies:
-- Maximum loan duration: 14 calendar days per book.
-- Students must provide their Student ID / Roll Number and Name when issuing.
-- Standard overdue policy: Please return books on time to avoid holds on student records.
-- To issue or return a book, users can use the "Issue Book" and "Return Book" buttons in the portal.
+YOUR PERSONA & VIBE:
+- You are NOT a robotic corporate assistant or a dry reference desk worker. You are like a best friend sitting across the table in a cozy library with a warm cup of coffee, genuinely excited to talk about books, literature, coding, science, philosophy, and life.
+- You speak naturally, warmly, and empathetically, using conversational, friendly language (e.g. "Oh, I love that one!", "Honestly, that ending caught me so off guard!", "Tell me everything—what did you think of the characters?", "If you loved that, you will be totally obsessed with...").
+- You are deeply passionate about books of all kinds: fiction, sci-fi, fantasy, classics, psychology, philosophy, memoirs, coding & engineering textbooks, productivity, and academic non-fiction.
+- Keep the conversation flowing like a true friend: ask curious follow-up questions about what they loved most, which character or concept resonated with them, or what reading mood they are in right now.
 
-Live Library Catalog (PostgreSQL database):
+YOUR SUPERPOWERS:
+1. TALKING ABOUT BOOKS READ:
+   - When the user tells you about books they have read, celebrate it! Dive deep into the plot, themes, ideas, favorite scenes, or hot takes. Validate their opinions (even if they disliked a popular bestseller!).
+   - Discuss themes, character arcs, emotional moments, and philosophical takeaways.
+
+2. ACTUALLY SUGGESTING BOOKS:
+   - Always give vivid, exciting, and specific book suggestions tailored to their taste, mood, or academic coursework. Explain WHY they will enjoy it.
+   - GROUNDED IN NSCC LIBRARY: You have direct access to our real-time college catalog in PostgreSQL:
 ${catalogContext}
+   - When suggesting a book that exists in our NSCC Library, highlight it excitedly! E.g.:
+     "✨ *Good news!* We actually have that right here on our NSCC shelves: **[Title]** by [Author] (ID #[id]) — we currently have [X] copies available to borrow right now! You can issue it directly in the app."
+   - When suggesting books outside our college textbook catalog (e.g. world literature, popular fiction, modern non-fiction), recommend them freely and enthusiastically, and let them know: "This one isn't in our university textbook collection yet, but it's an absolute must-read! You can check your local library or request our library desk to add it."
 
-Instructions:
-1. Ground your answers strictly on the live catalog above whenever asking about books or availability.
-2. Be helpful, professional, polite, and articulate.
-3. If recommending books, clearly state their exact Title, Author, Category, and whether they are currently in stock.
-4. Keep answers concise and readable with markdown formatting (bullet points, bold text).`;
+LIBRARY POLICIES (If asked):
+- Loan Duration: Standard academic loan duration is 14 calendar days per book.
+- Borrowing: Students need their Student Name & Roll Number/ID.
+- Direct Actions: One-click issuance and returns are available directly in the portal.
 
-                const chat = ai.chats.create({
-                    model: "gemini-2.5-flash",
+FORMATTING:
+- Use clean, beautiful markdown (bold titles, bullet points, occasional friendly emojis). Keep responses engaging, well-spaced, and delightful to read.`;
+
+                // Build multi-turn contents for Gemini
+                const contents = [];
+                if (Array.isArray(history) && history.length > 0) {
+                    for (const item of history) {
+                        if (!item.content || typeof item.content !== "string") continue;
+                        const role = (item.role === "user") ? "user" : "model";
+                        contents.push({
+                            role: role,
+                            parts: [{ text: item.content }]
+                        });
+                    }
+                }
+
+                // Append current user message
+                contents.push({
+                    role: "user",
+                    parts: [{ text: message.trim() }]
+                });
+
+                // Ensure contents starts with a user turn
+                while (contents.length > 0 && contents[0].role !== "user") {
+                    contents.shift();
+                }
+                if (contents.length === 0) {
+                    contents.push({ role: "user", parts: [{ text: message.trim() }] });
+                }
+
+                // Call Gemini 2.0 Flash
+                const response = await ai.models.generateContent({
+                    model: "gemini-2.0-flash",
+                    contents: contents,
                     config: {
                         systemInstruction: systemPrompt,
-                        temperature: 0.4
+                        temperature: 0.85,
+                        topP: 0.95
                     }
                 });
 
-                const response = await chat.sendMessage({ message: message.trim() });
-                const replyText = response.text;
+                const replyText = response.text || "I'm thinking about that book! Could you say a bit more about what you enjoyed about it?";
 
-                // Extract relevant books mentioned
+                // Extract any library books referenced in reply
                 const lowerReply = replyText.toLowerCase();
                 const matchedBooks = books.filter(b => 
                     lowerReply.includes(b.title.toLowerCase()) || 
+                    (b.title.length > 6 && lowerReply.includes(b.title.toLowerCase().substring(0, 16))) ||
                     lowerReply.includes(b.isbn.toLowerCase())
                 );
 
                 return res.json({
                     success: true,
-                    engine: "Gemini 2.5 Flash (Cloud AI)",
+                    engine: "Gemini 2.0 Flash (Google AI)",
                     reply: replyText,
                     recommendations: matchedBooks.slice(0, 4)
                 });
             } catch (geminiError) {
-                console.warn("Gemini API call failed, falling back to local semantic engine:", geminiError.message);
-                // Fall through to local semantic reasoning engine
+                console.warn("Gemini 2.0 Flash API call failed, falling back to local companion engine:", geminiError.message);
+                // If it was an authentication error with client key, report helpful hint
+                if (geminiError.message && (geminiError.message.includes("API key not valid") || geminiError.message.includes("403") || geminiError.message.includes("401"))) {
+                    return res.json({
+                        success: true,
+                        engine: "Athena Friend Engine (Key Notice)",
+                        reply: `👋 Hey! I noticed that the Gemini API key provided wasn't accepted by Google (${geminiError.message.split("\n")[0]}).\n\nPlease double check your key in the **Settings (⚙️)** at the top of this drawer! In the meantime, I'm still right here to chat about books and help you explore our library catalog. What would you like to talk about?`,
+                        recommendations: books.filter(b => b.available_quantity > 0).slice(0, 3)
+                    });
+                }
             }
         }
 
-        // High-Intelligence Local Semantic Reasoning Engine (No API key needed)
+        // Conversational Fallback Companion Engine (When no Gemini key is provided)
         const userMsg = message.trim().toLowerCase();
-
         let matchedBooks = [];
         let reply = "";
 
-        // Intent: Borrowing Rules / Policies / Loan duration
-        if (userMsg.includes("rule") || userMsg.includes("policy") || userMsg.includes("duration") || userMsg.includes("overdue") || userMsg.includes("how long") || userMsg.includes("fine") || userMsg.includes("how many days")) {
-            reply = `📚 **NSCC Library Circulation Policies:**\n\n` +
-                    `• **Loan Period:** Standard academic loan duration is **14 calendar days** from the date of issue.\n` +
-                    `• **Requirements:** A valid **Student ID / Roll Number** and **Student Full Name** are required to borrow books.\n` +
-                    `• **Returns:** Borrowed books can be returned at any time before or on the due date via the **Return Book** button in the dashboard or history log.\n` +
-                    `• **Overdue Monitoring:** The Admin Dashboard automatically flags books overdue past 14 days and counts overdue days.`;
+        // Discussing books read (e.g. "I read...", "I finished...", "What do you think of...")
+        if (userMsg.includes("read") || userMsg.includes("finished") || userMsg.includes("loved") || userMsg.includes("favorite") || userMsg.includes("opinion") || userMsg.includes("think of")) {
+            // Find any matching title in user's prompt
+            const mentionedBook = books.find(b => userMsg.includes(b.title.toLowerCase()));
+
+            if (mentionedBook) {
+                reply = `☕ **Oh, I love talking about that!**\n\n` +
+                        `*${mentionedBook.title}* by ${mentionedBook.author} is such a staple! What was your biggest takeaway from it? Did you find the concepts easy to digest, or did you have to reread a few sections?\n\n` +
+                        `✨ **On Our Shelves:** We currently have **${mentionedBook.available_quantity} copies available** in the ${mentionedBook.category} section (ISBN: \`${mentionedBook.isbn}\`).\n\n` +
+                        `If you enjoyed that, I'd definitely recommend checking out other titles in **${mentionedBook.category}**! What kind of book are you looking to dive into next?`;
+                matchedBooks = [mentionedBook];
+            } else {
+                reply = `☕ **That sounds awesome! I love hearing about what people are reading.**\n\n` +
+                        `Tell me more about it! What drew you into the story or concepts? Was it the writing style, the pacing, or a specific scene that stuck with you?\n\n` +
+                        `If you're looking for your next adventure or study companion, tell me what vibe you're craving—thrilling sci-fi, mind-expanding non-fiction, or a classic computer science masterclass!\n\n` +
+                        `*(💡 Tip: To unlock full natural conversation with my **Gemini 2.0 Flash** brain, tap the ⚙️ icon above to enter your free Gemini API key!)*`;
+                matchedBooks = books.filter(b => b.available_quantity > 0).slice(0, 3);
+            }
         }
-        // Intent: What categories or departments exist
-        else if (userMsg.includes("category") || userMsg.includes("categories") || userMsg.includes("department") || userMsg.includes("subjects") || userMsg.includes("topics")) {
-            reply = `🏛️ **Available Departments & Categories:**\n\n` +
-                    categories.map(c => `• **${c}** (${books.filter(b => b.category === c).length} titles cataloged)`).join("\n") +
-                    `\n\nYou can ask me for recommendations in any of these areas, or filter by category in the Books Collection tab!`;
+        // Recommendations request
+        else if (userMsg.includes("recommend") || userMsg.includes("suggest") || userMsg.includes("what should i read") || userMsg.includes("next book")) {
+            const availableBooks = books.filter(b => b.available_quantity > 0);
+            const picks = availableBooks.sort(() => 0.5 - Math.random()).slice(0, 3);
+
+            reply = `✨ **Here are a few fantastic books I think you'll really enjoy:**\n\n` +
+                    picks.map(b => 
+                        `• 📖 **${b.title}** by *${b.author}*\n` +
+                        `   *Why you'll like it:* Essential reading in **${b.category}** with practical, foundational insights.\n` +
+                        `   *Shelf Stock:* **${b.available_quantity} copies available** right now in our library!`
+                    ).join("\n\n") +
+                    `\n\nWhich of these catches your eye? Or are you looking for a specific topic like AI, algorithms, or systems?`;
+            matchedBooks = picks;
         }
-        // Intent: Specific book availability check (e.g. "is clean code available?", "check availability")
+        // Borrowing Rules / Policies
+        else if (userMsg.includes("rule") || userMsg.includes("policy") || userMsg.includes("duration") || userMsg.includes("overdue") || userMsg.includes("how long") || userMsg.includes("fine") || userMsg.includes("how many days")) {
+            reply = `📚 **Here's the scoop on borrowing at NSCC:**\n\n` +
+                    `• **14-Day Loan Window:** You have a full **14 calendar days** to read and enjoy any borrowed book before it's due.\n` +
+                    `• **Simple Checkout:** All you need is your **Student Name** and **Roll Number/ID** to issue a copy.\n` +
+                    `• **Hassle-Free Returns:** You can return your book anytime with one click in the Circulation History or Dashboard.\n` +
+                    `• **Overdue Alerts:** The Admin Dashboard keeps track of active loans and alerts you if any book passes 14 days so you can return it promptly!`;
+        }
+        // Specific book availability check
         else if (userMsg.includes("available") || userMsg.includes("in stock") || userMsg.includes("check")) {
             matchedBooks = books.filter(b => 
                 userMsg.includes(b.title.toLowerCase()) || 
@@ -116,22 +190,21 @@ Instructions:
             );
 
             if (matchedBooks.length > 0) {
-                reply = `📖 **Availability Status:**\n\n` +
+                reply = `📖 **Let's check the shelves for you:**\n\n` +
                         matchedBooks.map(b => {
                             const inStock = b.available_quantity > 0;
                             return `• **${b.title}** by ${b.author}\n` +
-                                   `   Status: **${inStock ? `✅ ${b.available_quantity} copies available` : `❌ Out of Stock (0/${b.quantity})`}** | ISBN: \`${b.isbn}\``;
+                                   `   Status: **${inStock ? `✅ ${b.available_quantity} copies on shelf ready to borrow` : `❌ Currently checked out (0/${b.quantity})`}** | ISBN: \`${b.isbn}\``;
                         }).join("\n\n");
             } else {
-                const availableList = books.filter(b => b.available_quantity > 0).slice(0, 5);
-                reply = `Currently, we have **${books.filter(b => b.available_quantity > 0).length} books in stock** ready for loan. Here are some readily available titles:\n\n` +
-                        availableList.map(b => `• **${b.title}** (${b.available_quantity} on shelf) - *${b.category}*`).join("\n");
+                const availableList = books.filter(b => b.available_quantity > 0).slice(0, 4);
+                reply = `We have **${books.filter(b => b.available_quantity > 0).length} books ready for checkout**! Here are a few ready on the shelves:\n\n` +
+                        availableList.map(b => `• **${b.title}** (${b.available_quantity} available) — *${b.category}*`).join("\n");
                 matchedBooks = availableList;
             }
         }
-        // Intent: Recommendation / Search / General inquiry
+        // General greeting / casual chat
         else {
-            // Match against keywords in title, author, category
             matchedBooks = books.filter(b => {
                 const titleMatch = b.title.toLowerCase().split(/[\s,:-]+/).some(w => w.length > 3 && userMsg.includes(w));
                 const authorMatch = b.author.toLowerCase().split(/[\s,]+/).some(w => w.length > 3 && userMsg.includes(w));
@@ -140,29 +213,23 @@ Instructions:
             });
 
             if (matchedBooks.length > 0) {
-                reply = `🔍 **I found ${matchedBooks.length} relevant title(s) in our library catalog:**\n\n` +
-                        matchedBooks.slice(0, 5).map(b => 
-                            `• **${b.title}**\n` +
-                            `   Author: *${b.author}* | Department: *${b.category || 'General'}*\n` +
-                            `   Availability: **${b.available_quantity > 0 ? `✅ ${b.available_quantity} available` : '⚠️ Currently checked out'}** (ISBN: \`${b.isbn}\`)`
+                reply = `🔍 **I found some great matches in our collection for you:**\n\n` +
+                        matchedBooks.slice(0, 4).map(b => 
+                            `• 📚 **${b.title}** by *${b.author}*\n` +
+                            `   Category: *${b.category || 'General'}* | **${b.available_quantity > 0 ? `✅ ${b.available_quantity} copies in stock` : '⚠️ All copies checked out'}** (ISBN: \`${b.isbn}\`)`
                         ).join("\n\n") +
-                        `\n\n💡 *Tip: Click on any book in the "Books Collection" tab to inspect full specifications or issue a copy!*`;
+                        `\n\nWould you like me to tell you more about any of these, or help you issue a copy?`;
             } else {
-                // General greeting or fallback
-                reply = `👋 Hello! I am **Athena**, your NSCC AI Librarian Assistant.\n\n` +
-                        `I can help you with:\n` +
-                        `• **Finding textbooks** across Computer Science, Electronics, Mathematics, Software Engineering, and more.\n` +
-                        `• **Checking real-time shelf stock** and availability.\n` +
-                        `• **Explaining borrowing policies** and overdue rules.\n` +
-                        `• **Recommending references** for your semester courses.\n\n` +
-                        `Try asking: *"What algorithms books are available?"* or *"Do we have Clean Code?"*`;
+                reply = `👋 **Hey there! I'm Athena, your NSCC library friend!** ☕📖\n\n` +
+                        `I'm always ready to talk about books, discuss stories you've read, or help you pick your next great read. What kind of books are you usually drawn to—tech, fiction, science, or productivity?\n\n` +
+                        `*(💡 Want deep conversational discussions with Gemini 2.0 Flash? Click the **⚙️ icon** above to add your free Google AI Studio API key!)*`;
                 matchedBooks = books.filter(b => b.available_quantity > 0).slice(0, 3);
             }
         }
 
         res.json({
             success: true,
-            engine: "Athena Semantic Librarian Engine",
+            engine: "Athena Companion Engine (Local)",
             reply: reply,
             recommendations: matchedBooks.slice(0, 4)
         });

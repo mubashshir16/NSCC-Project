@@ -88,9 +88,10 @@ export const api = {
     getExportUrl: () => `${API_BASE}/transactions/export`,
 
     // AI Features
-    aiChat: (message, history = []) => request("/ai/chat", {
+    aiChat: (message, history = [], apiKey = null) => request("/ai/chat", {
         method: "POST",
-        body: JSON.stringify({ message, history })
+        headers: apiKey ? { "x-gemini-api-key": apiKey } : {},
+        body: JSON.stringify({ message, history, apiKey })
     }),
 
     aiSmartSearch: (query) => request(`/ai/search?query=${encodeURIComponent(query)}`),

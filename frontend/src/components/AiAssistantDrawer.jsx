@@ -7,11 +7,17 @@ export default function AiAssistantDrawer({
   onOpenIssueBookWithPreset,
   onViewBookDetails
 }) {
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('nscc_gemini_api_key') || '');
+  const [showSettings, setShowSettings] = useState(false);
+  const [tempApiKey, setTempApiKey] = useState(apiKey);
+  const [showKeyText, setShowKeyText] = useState(false);
+
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: "👋 Hello! I am **Athena**, your NSCC AI Librarian. Ask me anything about our library catalog, course textbooks, real-time availability, or borrowing policies!",
-      recommendations: []
+      content: "👋 Hey there! I'm **Athena**, your library friend here at NSCC! ☕📖\n\nI love talking about books! Tell me about what you've been reading lately, what you loved (or hated!) about it, or what kind of vibe you're in the mood for. We can dissect your favorite plots, debate character arcs, or find the perfect book waiting for you on our college shelves.\n\nWhat's on your reading mind today?",
+      recommendations: [],
+      engine: apiKey ? "Gemini 2.0 Flash (Connected)" : "Athena Companion Engine"
     }
   ]);
   const [inputPrompt, setInputPrompt] = useState('');
@@ -19,10 +25,11 @@ export default function AiAssistantDrawer({
   const messagesEndRef = useRef(null);
 
   const quickPrompts = [
-    "What books on algorithms do we have?",
-    "Recommend a book for software engineering",
-    "Is Clean Code currently in stock?",
-    "What are the 14-day loan and overdue rules?"
+    "I just finished reading a great book!",
+    "Recommend a book like Clean Code",
+    "What computer science books do we have on shelf?",
+    "Suggest me a thrilling sci-fi novel",
+    "Let's talk about 1984 vs Brave New World"
   ];
 
   const scrollToBottom = () => {
@@ -35,6 +42,25 @@ export default function AiAssistantDrawer({
     }
   }, [messages, isOpen]);
 
+  const handleSaveKey = (e) => {
+    e.preventDefault();
+    const cleanKey = tempApiKey.trim();
+    setApiKey(cleanKey);
+    if (cleanKey) {
+      localStorage.setItem('nscc_gemini_api_key', cleanKey);
+    } else {
+      localStorage.removeItem('nscc_gemini_api_key');
+    }
+    setShowSettings(false);
+  };
+
+  const handleClearKey = () => {
+    setTempApiKey('');
+    setApiKey('');
+    localStorage.removeItem('nscc_gemini_api_key');
+    setShowSettings(false);
+  };
+
   const handleSend = async (textToSend = null) => {
     const query = (textToSend || inputPrompt).trim();
     if (!query || isTyping) return;
@@ -46,7 +72,8 @@ export default function AiAssistantDrawer({
     setIsTyping(true);
 
     try {
-      const res = await api.aiChat(query, newMessages.slice(-6));
+      const historyContext = newMessages.slice(-8);
+      const res = await api.aiChat(query, historyContext, apiKey || null);
       if (res.success) {
         setMessages((prev) => [
           ...prev,
@@ -62,7 +89,7 @@ export default function AiAssistantDrawer({
           ...prev,
           {
             role: 'assistant',
-            content: "⚠️ I encountered an issue retrieving that information. Please try again.",
+            content: "⚠️ I stumbled for a moment! Please ask me again or check our connection.",
             recommendations: []
           }
         ]);
@@ -72,7 +99,7 @@ export default function AiAssistantDrawer({
         ...prev,
         {
           role: 'assistant',
-          content: `⚠️ Error: ${err.message || 'Unable to communicate with AI service'}`,
+          content: `⚠️ Error communicating with Athena: ${err.message || 'Network error'}`,
           recommendations: []
         }
       ]);
@@ -90,25 +117,100 @@ export default function AiAssistantDrawer({
         <div className="ai-drawer-header">
           <div className="ai-drawer-brand">
             <div className="ai-avatar-badge">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"></path>
-                <path d="M6 14v-1a6 6 0 0 1 12 0v1"></path>
-                <rect x="4" y="14" width="16" height="8" rx="2"></rect>
-              </svg>
+              <span style={{ fontSize: '1.25rem' }}>☕</span>
             </div>
             <div>
-              <h3 className="ai-drawer-title">Athena &bull; AI Librarian</h3>
-              <span className="ai-drawer-subtitle">Catalog-grounded student assistant</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                <h3 className="ai-drawer-title">Athena</h3>
+                <span className="ai-friend-badge">Library Friend</span>
+              </div>
+              <span className="ai-drawer-subtitle">
+                {apiKey ? (
+                  <span className="status-live-pill gemini-active">
+                    <span className="dot-live-green"></span> Gemini 2.0 Flash
+                  </span>
+                ) : (
+                  <span className="status-live-pill" title="Click ⚙️ to enable Gemini 2.0 Flash">
+                    ☕ Companion Engine
+                  </span>
+                )}
+              </span>
             </div>
           </div>
-          <button className="ai-close-btn" onClick={onClose} aria-label="Close Assistant">
-            &times;
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <button
+              className={`ai-settings-btn ${showSettings ? 'active' : ''} ${apiKey ? 'has-key' : ''}`}
+              onClick={() => {
+                setTempApiKey(apiKey);
+                setShowSettings(!showSettings);
+              }}
+              title={apiKey ? "Gemini 2.0 Flash Key Configured (Click to edit)" : "Configure Gemini 2.0 Flash API Key"}
+            >
+              ⚙️
+            </button>
+            <button className="ai-close-btn" onClick={onClose} aria-label="Close Assistant">
+              &times;
+            </button>
+          </div>
         </div>
+
+        {/* Gemini API Key Settings Panel */}
+        {showSettings && (
+          <div className="ai-key-settings-panel">
+            <div className="settings-panel-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <span style={{ fontSize: '1.1rem' }}>⚡</span>
+                <strong>Gemini 2.0 Flash API Setup</strong>
+              </div>
+              <button className="panel-close-x" onClick={() => setShowSettings(false)}>&times;</button>
+            </div>
+            <p className="settings-desc">
+              Connect Google's <strong>Gemini 2.0 Flash</strong> model to talk naturally about any book you've read, dive deep into plots and themes, and get reading recommendations!
+            </p>
+            <form onSubmit={handleSaveKey} className="settings-form">
+              <div className="key-input-wrapper">
+                <input
+                  type={showKeyText ? "text" : "password"}
+                  className="key-text-input"
+                  placeholder="Paste GEMINI_API_KEY (AIzaSy...)"
+                  value={tempApiKey}
+                  onChange={(e) => setTempApiKey(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="key-toggle-view"
+                  onClick={() => setShowKeyText(!showKeyText)}
+                >
+                  {showKeyText ? "🙈" : "👁️"}
+                </button>
+              </div>
+              <div className="settings-actions">
+                <a
+                  href="https://aistudio.google.com/app/apikey"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="get-key-link"
+                >
+                  Get free key at Google AI Studio ↗
+                </a>
+                <div style={{ display: 'flex', gap: '0.4rem' }}>
+                  {apiKey && (
+                    <button type="button" className="btn-key-clear" onClick={handleClearKey}>
+                      Clear
+                    </button>
+                  )}
+                  <button type="submit" className="btn-key-save">
+                    Save Key
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        )}
 
         {/* Quick Suggestion Chips */}
         <div className="ai-prompt-chips">
-          <span className="chips-label">Try asking:</span>
+          <span className="chips-label">Chat starters:</span>
           <div className="chips-scroll">
             {quickPrompts.map((prompt, idx) => (
               <button
@@ -131,6 +233,11 @@ export default function AiAssistantDrawer({
               className={`ai-message-row ${msg.role === 'user' ? 'msg-user-row' : 'msg-ai-row'}`}
             >
               <div className={`ai-bubble ${msg.role === 'user' ? 'bubble-user' : 'bubble-ai'}`}>
+                {msg.engine && msg.role === 'assistant' && (
+                  <div className="bubble-engine-badge">
+                    <span>✨ {msg.engine}</span>
+                  </div>
+                )}
                 <div className="ai-bubble-content" style={{ whiteSpace: 'pre-wrap' }}>
                   {msg.content}
                 </div>
@@ -138,7 +245,7 @@ export default function AiAssistantDrawer({
                 {/* Embedded Book Recommendation Cards */}
                 {msg.recommendations && msg.recommendations.length > 0 && (
                   <div className="ai-recommendations-grid">
-                    <span className="rec-heading">Catalog Reference(s):</span>
+                    <span className="rec-heading">📚 Available on Library Shelves:</span>
                     {msg.recommendations.map((b) => (
                       <div key={b.id} className="rec-book-card">
                         <div className="rec-book-info">
@@ -147,7 +254,7 @@ export default function AiAssistantDrawer({
                         </div>
                         <div className="rec-book-actions">
                           <span className={`badge ${b.available_quantity > 0 ? 'badge-available' : 'badge-outofstock'}`}>
-                            {b.available_quantity > 0 ? `${b.available_quantity} Avail` : 'Out of Stock'}
+                            {b.available_quantity > 0 ? `${b.available_quantity} on shelf` : 'Checked Out'}
                           </span>
                           {b.available_quantity > 0 && onOpenIssueBookWithPreset && (
                             <button
@@ -157,7 +264,7 @@ export default function AiAssistantDrawer({
                                 onOpenIssueBookWithPreset(b);
                               }}
                             >
-                              Issue
+                              Borrow
                             </button>
                           )}
                         </div>
@@ -175,6 +282,7 @@ export default function AiAssistantDrawer({
                 <span className="typing-dot"></span>
                 <span className="typing-dot"></span>
                 <span className="typing-dot"></span>
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginLeft: '0.5rem' }}>Athena is thinking...</span>
               </div>
             </div>
           )}
@@ -186,7 +294,7 @@ export default function AiAssistantDrawer({
           <input
             type="text"
             className="ai-chat-input"
-            placeholder="Ask Athena about books, authors, policies..."
+            placeholder="Talk about books you read, ask for recommendations..."
             value={inputPrompt}
             onChange={(e) => setInputPrompt(e.target.value)}
             onKeyDown={(e) => {
@@ -198,6 +306,7 @@ export default function AiAssistantDrawer({
             className="ai-send-btn"
             onClick={() => handleSend()}
             disabled={isTyping || !inputPrompt.trim()}
+            title="Send Message"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="22" y1="2" x2="11" y2="13"></line>
