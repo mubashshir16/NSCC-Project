@@ -1,0 +1,11 @@
+{
+  "name": "nscc-library-management",
+  "version": "1.0.0",
+  "description": "NSCC Library Management System",
+  "private": true,
+  "scripts": {
+    "start": "npm start --prefix backend",
+    "backend": "npm run dev --prefix backend",
+    "frontend": "npm run dev --prefix frontend"
+  }
+}
