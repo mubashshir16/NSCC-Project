@@ -10,7 +10,7 @@ try {
 
 // 1. AI Librarian & Reading Companion Chatbot (Powered by Gemini 2.0 Flash)
 const chatWithLibrarian = async (req, res, next) => {
-    const { message, history = [], apiKey: clientApiKey } = req.body;
+    const { message, history = [], apiKey: clientApiKey } = req.body || {};
 
     if (!message || !message.trim()) {
         return res.status(400).json({
