@@ -1470,18 +1470,62 @@ body {
   color: #475569;
 }
 
+/* Table Book Details Cell */
+.book-title-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+.table-book-title {
+  display: block;
+  font-weight: 700;
+  color: var(--text-main);
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.table-book-isbn {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  color: #475569;
+  background: rgba(241, 245, 249, 0.9);
+  border: 1px solid #e2e8f0;
+  padding: 1.5px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
 .borrower-cell {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
 }
 
 .borrower-name {
-  font-weight: 600;
+  display: block;
+  font-weight: 700;
+  color: var(--text-main);
+  font-size: 0.88rem;
+  line-height: 1.35;
 }
 
 .borrower-id-tag {
-  font-size: 0.7rem;
-  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.72rem;
+  color: #7c3aed;
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.18);
+  padding: 1.5px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
 }
 
 /* Action Buttons in Tables */

@@ -223,13 +223,15 @@ export default function TransactionsList({
                     <td>
                       <div className="book-title-cell">
                         <span className="table-book-title">{tx.book_title || `Book #${tx.book_id}`}</span>
-                        <span className="table-book-isbn">ISBN: {tx.isbn || '—'}</span>
+                        {tx.isbn ? (
+                          <span className="table-book-isbn">ISBN: {tx.isbn}</span>
+                        ) : null}
                       </div>
                     </td>
                     <td>
                       <div className="borrower-cell">
                         <span className="borrower-name">{tx.student_name}</span>
-                        <code className="borrower-id-tag">{tx.student_id}</code>
+                        <span className="borrower-id-tag">{tx.student_id}</span>
                       </div>
                     </td>
                     <td className="text-muted">{formatDate(tx.issue_date)}</td>
