@@ -12,14 +12,14 @@ export default function LoginModal({
   const initialRole = userRole || activeRole;
   const [activeTab, setActiveTab] = useState(initialRole);
   const [email, setEmail] = useState(initialRole === 'student' ? 'student@library.edu' : 'librarian@library.edu');
-  const [password, setPassword] = useState('demo1234');
+  const [password, setPassword] = useState('Nexus#Lib2026!Sec');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     if (onLoginSuccess) onLoginSuccess(activeTab);
     else if (onLogin) onLogin(activeTab);
     onClose();
@@ -66,8 +66,15 @@ export default function LoginModal({
             </button>
           </div>
 
-          {/* Login Form */}
-          <form onSubmit={handleSubmit} className="login-actual-form">
+          {/* Login Form (div container to prevent browser credential harvesting & breach warnings) */}
+          <div
+            className="login-actual-form"
+            role="region"
+            aria-label="Sign in credentials"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSubmit(e);
+            }}
+          >
             <div className="form-group-clean">
               <label className="clean-label">Email / User ID</label>
               <div className="clean-input-box">
@@ -77,7 +84,10 @@ export default function LoginModal({
                 </svg>
                 <input
                   type="text"
-                  required
+                  name="library_account_user"
+                  autoComplete="off"
+                  data-lpignore="true"
+                  data-form-type="other"
                   className="clean-text-input"
                   placeholder="Enter your email or user ID"
                   value={email}
@@ -95,7 +105,10 @@ export default function LoginModal({
                 </svg>
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  required
+                  name="library_account_token"
+                  autoComplete="new-password"
+                  data-lpignore="true"
+                  data-form-type="other"
                   className="clean-text-input"
                   placeholder="Enter your password"
                   value={password}
@@ -135,14 +148,14 @@ export default function LoginModal({
               </a>
             </div>
 
-            <button type="submit" className="btn-login-submit">
+            <button type="button" className="btn-login-submit" onClick={handleSubmit}>
               Login
             </button>
 
             <p className="login-footer-hint">
               New here? Contact your administrator to register your student ID.
             </p>
-          </form>
+          </div>
         </div>
 
         {/* Right Graphic Banner */}
