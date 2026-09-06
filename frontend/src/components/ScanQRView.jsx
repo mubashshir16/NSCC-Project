@@ -277,18 +277,31 @@ export default function ScanQRView({
                   </div>
 
                   <div className="scanned-actions-row">
-                    <button
-                      className="btn-issue-primary-lg"
-                      disabled={scannedBook.available_quantity <= 0}
-                      onClick={() => onIssueBookWithPreset(scannedBook)}
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="8.5" cy="7" r="4"></circle>
-                        <polyline points="17 11 19 13 23 9"></polyline>
-                      </svg>
-                      <span>{scannedBook.available_quantity > 0 ? 'Borrow This Book' : 'Out of Stock'}</span>
-                    </button>
+                    {activeLoanForBook ? (
+                      <button
+                        className="btn-return-online-lg"
+                        onClick={() => onReturnBook(activeLoanForBook.id, scannedBook.title)}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                          <polyline points="9 11 12 14 22 4"></polyline>
+                          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                        </svg>
+                        <span>Return Book Online</span>
+                      </button>
+                    ) : (
+                      <button
+                        className="btn-issue-primary-lg"
+                        disabled={scannedBook.available_quantity <= 0}
+                        onClick={() => onIssueBookWithPreset(scannedBook)}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="8.5" cy="7" r="4"></circle>
+                          <polyline points="17 11 19 13 23 9"></polyline>
+                        </svg>
+                        <span>{scannedBook.available_quantity > 0 ? 'Borrow This Book' : 'Out of Stock'}</span>
+                      </button>
+                    )}
 
                     <button
                       className="btn-return-secondary-lg"

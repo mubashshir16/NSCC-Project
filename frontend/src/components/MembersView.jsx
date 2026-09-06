@@ -179,19 +179,17 @@ export default function MembersView({
                       )}
                     </td>
                     <td className="text-right">
-                      {!isStudent ? (
-                        <button
-                          className="btn-action-return"
-                          onClick={() => onReturnBook(loan.id)}
-                          title="Process Return"
-                        >
-                          Return
-                        </button>
-                      ) : (
-                        <span className="badge-pill badge-pill-available" style={{ fontSize: '0.72rem' }}>
-                          Return at Counter
-                        </span>
-                      )}
+                      <button
+                        className="btn-return-online"
+                        onClick={() => onReturnBook(loan.id, loan.book_title)}
+                        title={isStudent ? "File book return online" : "Process Return to Shelf"}
+                      >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                          <polyline points="9 11 12 14 22 4"></polyline>
+                          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                        </svg>
+                        <span>{isStudent ? 'Return Online' : 'Return'}</span>
+                      </button>
                     </td>
                   </tr>
                 );

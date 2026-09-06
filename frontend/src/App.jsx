@@ -265,17 +265,22 @@ export default function App() {
     }
   };
 
-  const handleReturnBook = async (transactionId) => {
-    if (userRole === 'student') {
-      showToast('Action restricted: Returns must be processed at the library desk.', 'error');
-      return;
-    }
-    const confirm = window.confirm('Confirm return of this book to shelf stock?');
+  const handleReturnBook = async (transactionId, bookTitle = '') => {
+    const isStudent = userRole === 'student';
+    const confirmMsg = isStudent
+      ? `Confirm returning ${bookTitle ? `"${bookTitle}"` : 'this book'} online to library stock?`
+      : `Confirm return of ${bookTitle ? `"${bookTitle}"` : 'this book'} to shelf stock?`;
+    
+    const confirm = window.confirm(confirmMsg);
     if (!confirm) return;
 
     try {
       const res = await api.returnBook(transactionId);
-      showToast(res.message || 'Book returned successfully');
+      showToast(
+        isStudent
+          ? '🎉 Book returned successfully online! Thank you.'
+          : (res.message || 'Book returned successfully')
+      );
       refreshAllData();
     } catch (err) {
       showToast(err.message || 'Failed to process return', 'error');
@@ -493,6 +498,7 @@ export default function App() {
         onClose={() => setIsDetailsModalOpen(false)}
         onIssueThisBook={handleIssueBookWithPreset}
         onEditThisBook={handleOpenEditBook}
+        onReturnThisBook={handleReturnBook}
         userRole={userRole}
       />
 

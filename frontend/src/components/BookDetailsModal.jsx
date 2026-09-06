@@ -9,6 +9,7 @@ export default function BookDetailsModal({
   onClose,
   onIssueThisBook,
   onEditThisBook,
+  onReturnThisBook,
   userRole = 'librarian'
 }) {
   const [qrDataUrl, setQrDataUrl] = useState('');
@@ -256,6 +257,24 @@ export default function BookDetailsModal({
               }}
             >
               {isAvailable ? (isStudent ? 'Borrow This Book' : 'Issue This Book') : 'Out of Stock'}
+            </button>
+          )}
+
+          {bookDetails?.recentTransactions?.find((t) => t.status === 'issued') && onReturnThisBook && (
+            <button
+              type="button"
+              className="btn-return-online"
+              onClick={() => {
+                const activeTx = bookDetails.recentTransactions.find((t) => t.status === 'issued');
+                onClose();
+                onReturnThisBook(activeTx.id, bookDetails.title);
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <polyline points="9 11 12 14 22 4"></polyline>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+              <span>{isStudent ? 'Return Online' : 'Return to Stock'}</span>
             </button>
           )}
 
