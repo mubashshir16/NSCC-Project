@@ -4072,10 +4072,11 @@ body {
   -webkit-backdrop-filter: blur(8px);
   z-index: 1050;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 16px;
+  padding: 24px 16px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal-dialog,
@@ -4084,7 +4085,8 @@ body {
   border-radius: 18px;
   width: 520px;
   max-width: 100%;
-  max-height: 90vh;
+  max-height: calc(100vh - 48px);
+  max-height: calc(100dvh - 48px);
   box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
@@ -4095,7 +4097,8 @@ body {
 }
 
 .modal-dialog > form,
-.modal-content-card > form {
+.modal-content-card > form,
+.modal-form {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
@@ -4179,9 +4182,14 @@ body {
   -webkit-overflow-scrolling: touch;
   flex: 1 1 auto;
   min-height: 0;
+  max-height: calc(100vh - 160px);
+  max-height: calc(100dvh - 160px);
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 14px;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+  overscroll-behavior: contain;
 }
 
 .modal-body::-webkit-scrollbar {
@@ -4349,7 +4357,7 @@ label {
   background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
   border: 1px solid #bfdbfe;
   border-radius: 12px;
-  padding: 14px 16px;
+  padding: 10px 14px;
   position: relative;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.05);
@@ -4360,7 +4368,7 @@ label {
   left: 0;
   top: 0;
   bottom: 0;
-  width: 5px;
+  width: 4px;
   background: #2563eb;
 }
 
@@ -4372,11 +4380,11 @@ label {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .preview-tag-badge {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -4386,13 +4394,13 @@ label {
 .preview-stock-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.74rem;
+  gap: 5px;
+  font-size: 0.72rem;
   font-weight: 700;
   color: #059669;
   background: #ecfdf5;
   border: 1px solid #a7f3d0;
-  padding: 3px 8px;
+  padding: 2px 8px;
   border-radius: 999px;
 }
 
@@ -4404,19 +4412,19 @@ label {
 }
 
 .preview-book-title {
-  font-size: 0.98rem;
+  font-size: 0.94rem;
   font-weight: 800;
   color: #0f172a;
-  line-height: 1.35;
-  margin: 0 0 6px 0;
+  line-height: 1.3;
+  margin: 0 0 4px 0;
 }
 
 .preview-meta-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  font-size: 0.78rem;
+  gap: 10px;
+  font-size: 0.76rem;
   color: #475569;
 }
 
@@ -4436,7 +4444,7 @@ label {
 
 /* Quick Fill Student / Demo Chips */
 .quick-fill-container {
-  padding: 10px 12px;
+  padding: 8px 12px;
   background: #f8fafc;
   border: 1px solid var(--card-border);
   border-radius: 10px;
@@ -4444,12 +4452,12 @@ label {
 
 .quick-fill-label {
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: #64748b;
-  margin-bottom: 7px;
+  margin-bottom: 6px;
 }
 
 .quick-fill-chips-row {
@@ -4462,11 +4470,11 @@ label {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 4px 10px;
+  padding: 3px 9px;
   background: #ffffff;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   font-weight: 600;
   color: #334155;
   cursor: pointer;
@@ -4490,7 +4498,7 @@ label {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 10px 14px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
@@ -5248,9 +5256,19 @@ label {
   }
 
   /* Modal on mobile */
-  .modal-card {
+  .modal-dialog,
+  .modal-card,
+  .modal-content-card {
     width: 95% !important;
-    max-height: 92vh;
+    max-height: calc(100vh - 20px);
+    max-height: calc(100dvh - 20px);
+    margin: auto;
+  }
+
+  .modal-overlay,
+  .modal-backdrop,
+  .modal-backdrop-blur {
+    padding: 10px 8px;
   }
 }
 

@@ -148,7 +148,7 @@ export default function BookModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="modal-form">
           <div className="modal-body">
             {formError && (
               <div className="modal-alert-error">
