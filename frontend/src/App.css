@@ -1140,35 +1140,41 @@ body {
 }
 
 .dash-table-tabs {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 4px;
   background: #f1f5f9;
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   padding: 3px;
-  border: 1px solid var(--card-border);
+  border: 1px solid #e2e8f0;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .dash-table-tab-btn {
   background: transparent;
-  border: none;
+  border: 1px solid transparent;
+  font-family: inherit;
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--text-muted);
-  padding: 5px 12px;
-  border-radius: 4px;
+  color: #64748b;
+  padding: 6px 13px;
+  border-radius: 7px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
 }
 
 .dash-table-tab-btn:hover {
-  color: var(--text-main);
+  color: #1e293b;
+  background: rgba(255, 255, 255, 0.65);
 }
 
 .dash-table-tab-btn.active {
   background: #ffffff;
-  color: #2563eb;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  color: #1d4ed8;
+  font-weight: 700;
+  border-color: rgba(203, 213, 225, 0.6);
+  box-shadow: 0 2px 5px -1px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04), inset 0 1px 0 #ffffff;
 }
 
 /* Book QR Code Card in BookDetailsModal */
@@ -1528,7 +1534,199 @@ body {
 .filters-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ==========================================================================
+   SEGMENTED TABS & CIRCULATION FILTER PILLS
+   ========================================================================== */
+.segmented-tabs-group {
+  display: inline-flex;
+  align-items: center;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 4px;
+  gap: 4px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.segmented-tabs-group::-webkit-scrollbar {
+  display: none;
+}
+
+.segmented-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 7px 15px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+
+.segmented-tab .tab-icon {
+  flex-shrink: 0;
+  transition: transform 0.2s ease, stroke 0.2s ease;
+  stroke: currentColor;
+}
+
+.segmented-tab:hover {
+  color: #1e293b;
+  background: rgba(255, 255, 255, 0.65);
+  transform: translateY(-1px);
+}
+
+.segmented-tab:active {
+  transform: translateY(0.5px) scale(0.98);
+}
+
+/* Tab Counter Badge */
+.tab-counter-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 9999px;
+  background: #e2e8f0;
+  color: #475569;
+  line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.segmented-tab:hover .tab-counter-badge {
+  background: #cbd5e1;
+  color: #0f172a;
+}
+
+/* Active States */
+.segmented-tab.active {
+  background: #ffffff;
+  color: #0f172a;
+  font-weight: 700;
+  border-color: rgba(203, 213, 225, 0.7);
+  box-shadow: 0 2px 6px -1px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.03), inset 0 1px 0 #ffffff;
+}
+
+.segmented-tab.active .tab-counter-badge {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+/* Active Loans Specific Styling */
+.segmented-tab.tab-issued {
+  color: #475569;
+}
+
+.segmented-tab.tab-issued:hover {
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.segmented-tab.tab-issued.active {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+  box-shadow: 0 2px 6px -1px rgba(37, 99, 235, 0.16), 0 1px 3px rgba(37, 99, 235, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.segmented-tab.tab-issued.active .tab-counter-badge {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+/* Overdue Tab Styling */
+.segmented-tab.tab-overdue {
+  color: #b45309;
+}
+
+.segmented-tab.tab-overdue:hover {
+  color: #dc2626;
+  background: #fff1f2;
+}
+
+.segmented-tab.tab-overdue.active {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+  box-shadow: 0 2px 6px -1px rgba(220, 38, 38, 0.18), 0 1px 3px rgba(220, 38, 38, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.segmented-tab.tab-overdue .tab-counter-badge {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.segmented-tab.tab-overdue.active .tab-counter-badge {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+/* Overdue Pulse Dot */
+.tab-pulse-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  animation: tab-pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+  margin-right: -2px;
+}
+
+@keyframes tab-pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+/* Returned Tab Styling */
+.segmented-tab.tab-returned {
+  color: #475569;
+}
+
+.segmented-tab.tab-returned:hover {
+  color: #047857;
+  background: #ecfdf5;
+}
+
+.segmented-tab.tab-returned.active {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+  box-shadow: 0 2px 6px -1px rgba(5, 150, 105, 0.16), 0 1px 3px rgba(5, 150, 105, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.segmented-tab.tab-returned.active .tab-counter-badge {
+  background: #059669;
+  color: #ffffff;
 }
 
 .custom-select {
@@ -1543,8 +1741,7 @@ body {
   cursor: pointer;
 }
 
-.btn-clear-pill,
-.btn-reset-filters {
+.btn-clear-pill {
   height: 38px;
   padding: 0 14px;
   border: 1px solid var(--card-border);
@@ -1557,10 +1754,49 @@ body {
   transition: all 0.15s ease;
 }
 
-.btn-clear-pill:hover,
-.btn-reset-filters:hover {
+.btn-clear-pill:hover {
   background: #f1f5f9;
   color: var(--text-main);
+}
+
+/* Enhanced Reset Filter Pill Button */
+.btn-reset-filters {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.btn-reset-filters svg {
+  stroke: #64748b;
+  transition: transform 0.3s ease, stroke 0.2s ease;
+}
+
+.btn-reset-filters:hover {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.btn-reset-filters:hover svg {
+  stroke: #0f172a;
+  transform: rotate(-45deg);
+}
+
+.btn-reset-filters:active {
+  transform: translateY(0.5px) scale(0.98);
 }
 
 /* ==========================================================================

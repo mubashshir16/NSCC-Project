@@ -4,6 +4,7 @@ import { formatDate } from '../utils/formatDate';
 export default function TransactionsList({
   transactions,
   loading,
+  stats,
   statusFilter,
   onStatusChange,
   searchQuery,
@@ -75,29 +76,70 @@ export default function TransactionsList({
               className={`segmented-tab ${statusFilter === 'all' ? 'active' : ''}`}
               onClick={() => onStatusChange('all')}
               role="tab"
+              aria-selected={statusFilter === 'all'}
             >
-              All Records
+              <svg className="tab-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              <span>All Records</span>
+              {stats?.totalTransactions !== undefined && (
+                <span className="tab-counter-badge">{stats.totalTransactions}</span>
+              )}
             </button>
+
             <button
-              className={`segmented-tab ${statusFilter === 'issued' ? 'active' : ''}`}
+              className={`segmented-tab tab-issued ${statusFilter === 'issued' ? 'active' : ''}`}
               onClick={() => onStatusChange('issued')}
               role="tab"
+              aria-selected={statusFilter === 'issued'}
             >
-              Active Loans
+              <svg className="tab-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+              </svg>
+              <span>Active Loans</span>
+              {stats?.activeIssues !== undefined && (
+                <span className="tab-counter-badge">{stats.activeIssues}</span>
+              )}
             </button>
+
             <button
-              className={`segmented-tab ${statusFilter === 'overdue' ? 'active tab-overdue' : ''}`}
+              className={`segmented-tab tab-overdue ${statusFilter === 'overdue' ? 'active' : ''}`}
               onClick={() => onStatusChange('overdue')}
               role="tab"
+              aria-selected={statusFilter === 'overdue'}
             >
-              ⚠️ Overdue
+              <svg className="tab-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <span>Overdue</span>
+              {stats?.overdueCount > 0 && <span className="tab-pulse-dot" title="Overdue books requiring action" />}
+              {stats?.overdueCount !== undefined && (
+                <span className="tab-counter-badge">{stats.overdueCount}</span>
+              )}
             </button>
+
             <button
-              className={`segmented-tab ${statusFilter === 'returned' ? 'active' : ''}`}
+              className={`segmented-tab tab-returned ${statusFilter === 'returned' ? 'active' : ''}`}
               onClick={() => onStatusChange('returned')}
               role="tab"
+              aria-selected={statusFilter === 'returned'}
             >
-              Returned
+              <svg className="tab-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              <span>Returned</span>
+              {stats?.totalReturned !== undefined && (
+                <span className="tab-counter-badge">{stats.totalReturned}</span>
+              )}
             </button>
           </div>
 
@@ -110,7 +152,11 @@ export default function TransactionsList({
               }}
               title="Reset search and filters"
             >
-              Reset
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                <path d="M3 3v5h5"></path>
+              </svg>
+              <span>Reset</span>
             </button>
           )}
         </div>

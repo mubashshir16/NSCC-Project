@@ -425,6 +425,7 @@ export default function App() {
             <TransactionsList
               transactions={transactions}
               loading={loadingTransactions}
+              stats={stats}
               statusFilter={txStatusFilter}
               onStatusChange={setTxStatusFilter}
               searchQuery={txSearch}
