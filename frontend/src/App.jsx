@@ -307,8 +307,19 @@ export default function App() {
       <div className="landing-view-root">
         <Toast toast={toast} onClose={() => setToast(null)} />
         <LandingPage
-          onEnterApp={() => setViewMode('app')}
+          onEnterApp={(targetTab = 'dashboard') => {
+            setActiveTab(targetTab);
+            setViewMode('app');
+          }}
+          onExploreStudent={() => {
+            setUserRole('student');
+            setActiveTab('members');
+            setViewMode('app');
+            showToast('Welcome to the Student Portal!');
+          }}
           onOpenLogin={() => setIsLoginModalOpen(true)}
+          books={books}
+          stats={stats}
         />
         <LoginModal
           isOpen={isLoginModalOpen}
