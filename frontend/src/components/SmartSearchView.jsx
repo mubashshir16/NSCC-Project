@@ -138,16 +138,15 @@ export default function SmartSearchView({
                       {isAvailable ? `${book.available_quantity} Available` : 'Out of Stock'}
                     </span>
 
-                    {userRole !== 'student' ? (
-                      isAvailable && onIssueBookWithPreset && (
+                    <div className="card-actions-group" style={{ display: 'flex', gap: '6px' }}>
+                      {isAvailable && onIssueBookWithPreset && (
                         <button
                           className="btn-card-borrow"
                           onClick={() => onIssueBookWithPreset(book)}
                         >
-                          Issue
+                          {userRole === 'student' ? 'Borrow' : 'Issue'}
                         </button>
-                      )
-                    ) : (
+                      )}
                       <button
                         className="btn-card-borrow"
                         style={{ background: '#f1f5f9', color: '#1e293b', border: '1px solid #cbd5e1' }}
@@ -155,7 +154,7 @@ export default function SmartSearchView({
                       >
                         Details
                       </button>
-                    )}
+                    </div>
                   </div>
                 </div>
               </div>

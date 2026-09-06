@@ -6,12 +6,15 @@ export default function IssueBookModal({
   onIssue,
   books = [],
   presetBook = null,
-  isSubmitting = false
+  isSubmitting = false,
+  userRole = 'librarian'
 }) {
   const [selectedBookId, setSelectedBookId] = useState('');
   const [studentName, setStudentName] = useState('');
   const [studentId, setStudentId] = useState('');
   const [formError, setFormError] = useState('');
+
+  const isStudent = userRole === 'student';
 
   // Available books with stock > 0
   const availableBooks = books.filter((b) => b.available_quantity > 0);
@@ -51,10 +54,15 @@ export default function IssueBookModal({
     } else {
       setSelectedBookId('');
     }
-    setStudentName('');
-    setStudentId('');
+    if (isStudent) {
+      setStudentName('Student');
+      setStudentId('STU-2024-001');
+    } else {
+      setStudentName('');
+      setStudentId('');
+    }
     setFormError('');
-  }, [presetBook, isOpen]);
+  }, [presetBook, isOpen, isStudent]);
 
   if (!isOpen) return null;
 
@@ -104,8 +112,12 @@ export default function IssueBookModal({
               </svg>
             </div>
             <div>
-              <h3 className="modal-title">Issue Book Entry</h3>
-              <p className="modal-subtitle">Assign library copy to a registered student</p>
+              <h3 className="modal-title">{isStudent ? 'Borrow Book' : 'Issue Book Entry'}</h3>
+              <p className="modal-subtitle">
+                {isStudent
+                  ? 'Confirm book loan for your student account'
+                  : 'Assign library copy to a registered student'}
+              </p>
             </div>
           </div>
           <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
@@ -325,14 +337,14 @@ export default function IssueBookModal({
               {isSubmitting ? (
                 <>
                   <div className="btn-spinner-mini"></div>
-                  <span>Issuing Book...</span>
+                  <span>{isStudent ? 'Borrowing Book...' : 'Issuing Book...'}</span>
                 </>
               ) : (
                 <>
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                     <polyline points="20 6 9 17 4 12"></polyline>
                   </svg>
-                  <span>Confirm &amp; Issue Book</span>
+                  <span>{isStudent ? 'Confirm & Borrow Book' : 'Confirm & Issue Book'}</span>
                 </>
               )}
             </button>

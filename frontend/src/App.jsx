@@ -237,37 +237,29 @@ export default function App() {
   };
 
   const handleOpenIssueBook = () => {
-    if (userRole === 'student') {
-      showToast('Action restricted: Only library staff are authorized to issue books.', 'error');
-      return;
-    }
     setPresetBook(null);
     setIsIssueModalOpen(true);
   };
 
   const handleIssueBookWithPreset = (book) => {
-    if (userRole === 'student') {
-      showToast('Action restricted: Only library staff are authorized to issue books.', 'error');
-      return;
-    }
     setPresetBook(book);
     setIsIssueModalOpen(true);
   };
 
   const handleIssueBook = async (issueData) => {
-    if (userRole === 'student') {
-      showToast('Action restricted: Students cannot issue books directly.', 'error');
-      return;
-    }
     setIsSubmitting(true);
     try {
       const res = await api.issueBook(issueData);
-      showToast(res.message || 'Book issued successfully');
+      showToast(
+        userRole === 'student'
+          ? '🎉 Book borrowed successfully! You can view it under "My Books".'
+          : (res.message || 'Book issued successfully')
+      );
       setIsIssueModalOpen(false);
       setPresetBook(null);
       refreshAllData();
     } catch (err) {
-      showToast(err.message || 'Failed to issue book', 'error');
+      showToast(err.message || 'Failed to borrow book', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -511,6 +503,7 @@ export default function App() {
         books={books}
         presetBook={presetBook}
         isSubmitting={isSubmitting}
+        userRole={userRole}
       />
 
       <LoginModal

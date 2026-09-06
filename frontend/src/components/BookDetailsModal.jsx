@@ -233,36 +233,30 @@ export default function BookDetailsModal({
 
         <div className="modal-footer">
           {bookDetails && !isStudent && (
-            <>
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={() => {
-                  onClose();
-                  onEditThisBook(bookDetails);
-                }}
-              >
-                Edit Details
-              </button>
-
-              <button
-                type="button"
-                className="btn-primary"
-                disabled={!isAvailable}
-                onClick={() => {
-                  onClose();
-                  onIssueThisBook(bookDetails);
-                }}
-              >
-                {isAvailable ? 'Issue This Book' : 'Out of Stock'}
-              </button>
-            </>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => {
+                onClose();
+                onEditThisBook(bookDetails);
+              }}
+            >
+              Edit Details
+            </button>
           )}
 
-          {isStudent && (
-            <span style={{ fontSize: '0.8rem', color: '#64748b', marginRight: 'auto' }}>
-              ℹ️ To borrow this book, please request it from the librarian at the front desk.
-            </span>
+          {bookDetails && (
+            <button
+              type="button"
+              className="btn-primary"
+              disabled={!isAvailable}
+              onClick={() => {
+                onClose();
+                onIssueThisBook(bookDetails);
+              }}
+            >
+              {isAvailable ? (isStudent ? 'Borrow This Book' : 'Issue This Book') : 'Out of Stock'}
+            </button>
           )}
 
           <button type="button" className="btn-secondary" onClick={onClose}>

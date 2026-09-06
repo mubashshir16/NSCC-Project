@@ -229,13 +229,24 @@ export default function BooksList({
                     </td>
                     <td className="text-right">
                       {userRole === 'student' ? (
-                        <button
-                          className="btn-secondary-clean"
-                          style={{ padding: '5px 12px', fontSize: '0.78rem' }}
-                          onClick={() => onViewBookDetails(book.id)}
-                        >
-                          View Details
-                        </button>
+                        <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
+                          {isAvailable && onIssueBookWithPreset && (
+                            <button
+                              className="btn-primary"
+                              style={{ padding: '4px 12px', fontSize: '0.76rem', height: '28px', borderRadius: '6px' }}
+                              onClick={() => onIssueBookWithPreset(book)}
+                            >
+                              Borrow
+                            </button>
+                          )}
+                          <button
+                            className="btn-secondary-clean"
+                            style={{ padding: '4px 10px', fontSize: '0.76rem', height: '28px' }}
+                            onClick={() => onViewBookDetails(book.id)}
+                          >
+                            Details
+                          </button>
+                        </div>
                       ) : (
                         <div className="table-action-icons-row">
                           {isAvailable && onIssueBookWithPreset && (

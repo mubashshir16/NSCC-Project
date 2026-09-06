@@ -46,15 +46,15 @@ export default function MembersView({
           </p>
         </div>
 
-        {/* Issue Book button is strictly restricted to librarians */}
-        {!isStudent && onOpenIssueBook && (
+        {/* Borrow / Issue button */}
+        {onOpenIssueBook && (
           <div className="page-header-actions">
             <button className="btn-primary" onClick={onOpenIssueBook}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
               </svg>
-              <span>Issue New Book</span>
+              <span>{isStudent ? 'Borrow Book' : 'Issue New Book'}</span>
             </button>
           </div>
         )}
@@ -125,12 +125,12 @@ export default function MembersView({
           <h4 className="empty-state-title">No Active Borrowings Found</h4>
           <p className="empty-state-text">
             {isStudent
-              ? 'You currently have no books issued to your account. Visit the library circulation counter to borrow books.'
+              ? 'You currently have no books checked out under your account. Select a book from the catalog to borrow it now.'
               : 'There are currently no active book loans matching this criteria. All library volumes are on shelf.'}
           </p>
-          {!isStudent && onOpenIssueBook && (
+          {onOpenIssueBook && (
             <button className="btn-primary" onClick={onOpenIssueBook}>
-              Issue a Book Copy
+              {isStudent ? 'Borrow a Book Now' : 'Issue a Book Copy'}
             </button>
           )}
         </div>
