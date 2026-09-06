@@ -215,28 +215,6 @@ export default function Sidebar({
           </button>
         </div>
 
-        {/* Role Switcher Pill */}
-        <div className="role-switch-container">
-          <button
-            className={`role-tab-btn ${!isStudent ? 'active' : ''}`}
-            onClick={() => {
-              setUserRole('librarian');
-              handleNavClick('dashboard');
-            }}
-          >
-            Librarian
-          </button>
-          <button
-            className={`role-tab-btn ${isStudent ? 'active' : ''}`}
-            onClick={() => {
-              setUserRole('student');
-              handleNavClick('members');
-            }}
-          >
-            Student
-          </button>
-        </div>
-
         {/* Navigation Links */}
         <nav className="sidebar-nav">
           {currentNav.map((item) => {
