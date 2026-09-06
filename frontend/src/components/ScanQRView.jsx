@@ -330,7 +330,7 @@ export default function ScanQRView({
                     className="btn-return-secondary-lg"
                     onClick={() => {
                       if (activeLoanForBook) {
-                        onReturnBook(activeLoanForBook.id);
+                        onReturnBook(activeLoanForBook.id, scannedBook.title);
                       } else {
                         alert(`No active loan record currently pending return for "${scannedBook.title}". All copies are accounted for or ready on shelves.`);
                       }
