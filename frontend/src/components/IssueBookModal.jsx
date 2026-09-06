@@ -48,9 +48,12 @@ export default function IssueBookModal({
 
   useEffect(() => {
     if (presetBook) {
-      setSelectedBookId(presetBook.id.toString());
+      const pId = (presetBook.id ?? presetBook.book_id ?? '').toString();
+      setSelectedBookId(pId);
     } else if (availableBooks.length > 0) {
-      setSelectedBookId(availableBooks[0].id.toString());
+      if (!selectedBookId || !availableBooks.some(b => b.id?.toString() === selectedBookId)) {
+        setSelectedBookId(availableBooks[0].id?.toString() || '');
+      }
     } else {
       setSelectedBookId('');
     }
@@ -62,11 +65,38 @@ export default function IssueBookModal({
       setStudentId('');
     }
     setFormError('');
-  }, [presetBook, isOpen, isStudent]);
+  }, [presetBook, isOpen, isStudent, books]);
 
   if (!isOpen) return null;
 
-  const currentSelectedBook = books.find((b) => b.id.toString() === selectedBookId);
+  const currentSelectedBook =
+    books.find((b) => b.id?.toString() === selectedBookId?.toString()) ||
+    (presetBook && (presetBook.id?.toString() === selectedBookId?.toString() || presetBook.book_id?.toString() === selectedBookId?.toString()) ? presetBook : null) ||
+    presetBook ||
+    (availableBooks.length > 0 ? availableBooks[0] : null);
+
+  const displayTitle =
+    currentSelectedBook?.title ||
+    currentSelectedBook?.book_title ||
+    currentSelectedBook?.name ||
+    'Selected Book';
+
+  const displayAuthor =
+    currentSelectedBook?.author ||
+    currentSelectedBook?.book_author ||
+    currentSelectedBook?.writer ||
+    '';
+
+  const displayIsbn =
+    currentSelectedBook?.isbn ||
+    currentSelectedBook?.book_isbn ||
+    '';
+
+  const displayCopies =
+    currentSelectedBook?.available_quantity ??
+    currentSelectedBook?.quantity ??
+    currentSelectedBook?.availableQuantity ??
+    0;
 
   const handleQuickFill = (student) => {
     setStudentName(student.name);
@@ -182,21 +212,25 @@ export default function IssueBookModal({
                     <span className="preview-tag-badge">Selected Title</span>
                     <span className="preview-stock-badge">
                       <span className="stock-dot-green"></span>
-                      {currentSelectedBook.available_quantity} copies available
+                      {displayCopies} {displayCopies === 1 ? 'copy' : 'copies'} available
                     </span>
                   </div>
-                  <h4 className="preview-book-title">{currentSelectedBook.title}</h4>
+                  <h4 className="preview-book-title">{displayTitle}</h4>
                   <div className="preview-meta-row">
-                    <span className="preview-author-text">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                      </svg>
-                      {currentSelectedBook.author}
-                    </span>
-                    <span className="preview-isbn-text">
-                      ISBN: <code>{currentSelectedBook.isbn}</code>
-                    </span>
+                    {displayAuthor && (
+                      <span className="preview-author-text">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        {displayAuthor}
+                      </span>
+                    )}
+                    {displayIsbn && (
+                      <span className="preview-isbn-text">
+                        ISBN: <code>{displayIsbn}</code>
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -224,7 +258,6 @@ export default function IssueBookModal({
                     setStudentName(e.target.value);
                     setFormError('');
                   }}
-                  autoFocus
                 />
               </div>
             </div>
