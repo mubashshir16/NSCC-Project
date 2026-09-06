@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 
 export default function LoginModal({
   isOpen,
@@ -7,7 +7,7 @@ export default function LoginModal({
   onLoginSuccess
 }) {
   const [activeTab, setActiveTab] = useState(userRole || 'librarian');
-  const [email, setEmail] = useState(activeTab === 'student' ? 'arjun@library.edu' : 'librarian@library.edu');
+  const [email, setEmail] = useState(activeTab === 'student' ? 'student@library.edu' : 'librarian@library.edu');
   const [password, setPassword] = useState('password123');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
@@ -53,7 +53,7 @@ export default function LoginModal({
               className={`login-tab-btn ${activeTab === 'student' ? 'active' : ''}`}
               onClick={() => {
                 setActiveTab('student');
-                setEmail('arjun@library.edu');
+                setEmail('student@library.edu');
               }}
             >
               Student

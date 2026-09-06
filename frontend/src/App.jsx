@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import TopHeader from './components/TopHeader';
 import LandingPage from './components/LandingPage';
@@ -25,6 +25,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [viewMode, setViewMode] = useState('app'); // 'landing' | 'app'
   const [userRole, setUserRole] = useState('librarian'); // 'librarian' | 'student'
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Core Data States from PostgreSQL
   const [stats, setStats] = useState(null);
@@ -306,6 +307,8 @@ export default function App() {
         onOpenLoginModal={() => setIsLoginModalOpen(true)}
         onOpenAi={() => setIsAiOpen(true)}
         onViewLandingPage={() => setViewMode('landing')}
+        isMobileMenuOpen={isMobileMenuOpen}
+        onCloseMobileMenu={() => setIsMobileMenuOpen(false)}
       />
 
       {/* Main App Body */}
@@ -319,6 +322,7 @@ export default function App() {
           onOpenAi={() => setIsAiOpen(true)}
           isBackendOnline={isBackendOnline}
           onQuickNavigate={(tab) => setActiveTab(tab)}
+          onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         />
 
         {/* Scrollable View Content */}
@@ -469,6 +473,81 @@ export default function App() {
           showToast(`Logged in as ${role === 'student' ? 'Student Member' : 'Librarian'}`);
         }}
       />
+
+      {/* Mobile Bottom Navigation Bar (Visible on mobile/tablet viewports) */}
+      <nav className="mobile-bottom-nav">
+        <button
+          className={`mobile-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+          onClick={() => setActiveTab('dashboard')}
+          aria-label="Dashboard"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+          </svg>
+          <span>Dashboard</span>
+        </button>
+
+        <button
+          className={`mobile-nav-item ${activeTab === 'books' ? 'active' : ''}`}
+          onClick={() => setActiveTab('books')}
+          aria-label="Books"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          <span>Books</span>
+        </button>
+
+        <button
+          className={`mobile-nav-item mobile-nav-scan ${activeTab === 'scan-qr' || activeTab === 'issue-return' ? 'active' : ''}`}
+          onClick={() => setActiveTab('scan-qr')}
+          aria-label="Scan QR Code"
+        >
+          <div className="mobile-scan-bubble">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <rect x="3" y="3" width="6" height="6" rx="1" />
+              <rect x="15" y="3" width="6" height="6" rx="1" />
+              <rect x="3" y="15" width="6" height="6" rx="1" />
+              <line x1="15" y1="15" x2="21" y2="15" />
+              <line x1="15" y1="21" x2="21" y2="21" />
+              <line x1="18" y1="15" x2="18" y2="21" />
+            </svg>
+          </div>
+          <span>Scan QR</span>
+        </button>
+
+        <button
+          className={`mobile-nav-item ${activeTab === 'transactions' ? 'active' : ''}`}
+          onClick={() => setActiveTab('transactions')}
+          aria-label="Circulation"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="17 1 21 5 17 9"></polyline>
+            <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+            <polyline points="7 23 3 19 7 15"></polyline>
+            <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+          </svg>
+          <span>Activity</span>
+        </button>
+
+        <button
+          className={`mobile-nav-item ${isAiOpen ? 'active' : ''}`}
+          onClick={() => setIsAiOpen(true)}
+          aria-label="AI Assistant"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10a9.96 9.96 0 0 1-4.587-1.11L3 22l1.11-4.413A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2z"></path>
+            <circle cx="8" cy="12" r="1.5" fill="currentColor"></circle>
+            <circle cx="12" cy="12" r="1.5" fill="currentColor"></circle>
+            <circle cx="16" cy="12" r="1.5" fill="currentColor"></circle>
+          </svg>
+          <span>AI Chat</span>
+        </button>
+      </nav>
     </div>
   );
 }

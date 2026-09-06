@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 
 export default function Sidebar({
   activeTab,
@@ -8,7 +8,9 @@ export default function Sidebar({
   onOpenLoginModal,
   onOpenAi,
   unreadNotificationsCount = 2,
-  onViewLandingPage
+  onViewLandingPage,
+  isMobileMenuOpen = false,
+  onCloseMobileMenu = () => {}
 }) {
   const isStudent = userRole === 'student';
 
@@ -37,7 +39,7 @@ export default function Sidebar({
     },
     {
       id: 'scan-qr',
-      label: 'Scan QR',
+      label: 'Scan QR / Search',
       icon: (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <rect x="3" y="3" width="6" height="6" rx="1"></rect>
@@ -74,7 +76,7 @@ export default function Sidebar({
     },
     {
       id: 'members',
-      label: 'Members',
+      label: 'Members / Loans',
       icon: (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -139,26 +141,24 @@ export default function Sidebar({
       )
     },
     {
-      id: 'transactions',
-      label: 'My Transactions',
-      icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <polyline points="12 8 12 12 14 14"></polyline>
-          <path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5"></path>
-        </svg>
-      )
-    },
-    {
       id: 'scan-qr',
-      label: 'Scan QR',
+      label: 'Scan QR Code',
       icon: (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <rect x="3" y="3" width="6" height="6" rx="1"></rect>
           <rect x="15" y="3" width="6" height="6" rx="1"></rect>
           <rect x="3" y="15" width="6" height="6" rx="1"></rect>
           <path d="M15 15h2v2h-2z"></path>
-          <path d="M19 15h2v6h-2z"></path>
-          <path d="M15 19h2v2h-2z"></path>
+        </svg>
+      )
+    },
+    {
+      id: 'transactions',
+      label: 'My Transactions',
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <polyline points="12 8 12 12 14 14"></polyline>
+          <path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5"></path>
         </svg>
       )
     },
@@ -176,94 +176,134 @@ export default function Sidebar({
 
   const currentNav = isStudent ? studentNavItems : adminNavItems;
 
+  const handleNavClick = (tabId) => {
+    setActiveTab(tabId);
+    onCloseMobileMenu();
+  };
+
   return (
-    <aside className="app-sidebar">
-      {/* Brand Header */}
-      <div className="sidebar-brand" onClick={() => setActiveTab(isStudent ? 'members' : 'dashboard')}>
-        <div className="brand-circle-logo">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-            <path d="M10 7h6"></path>
-            <path d="M10 11h6"></path>
-          </svg>
-        </div>
-        <div className="brand-text-block">
-          <span className="brand-main-title">Library System</span>
-          <span className="brand-role-subtitle">{isStudent ? 'Student Portal' : 'Admin Console'}</span>
-        </div>
-      </div>
+    <>
+      {/* Mobile Drawer Backdrop Overlay */}
+      {isMobileMenuOpen && (
+        <div className="sidebar-mobile-overlay" onClick={onCloseMobileMenu} />
+      )}
 
-      {/* Role Switcher Pill */}
-      <div className="role-switch-container">
-        <button
-          className={`role-tab-btn ${!isStudent ? 'active' : ''}`}
-          onClick={() => {
-            setUserRole('librarian');
-            setActiveTab('dashboard');
-          }}
-        >
-          Librarian
-        </button>
-        <button
-          className={`role-tab-btn ${isStudent ? 'active' : ''}`}
-          onClick={() => {
-            setUserRole('student');
-            setActiveTab('members');
-          }}
-        >
-          Student
-        </button>
-      </div>
-
-      {/* Navigation Links */}
-      <nav className="sidebar-nav">
-        {currentNav.map((item) => {
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
-              onClick={() => setActiveTab(item.id)}
-            >
-              <span className="nav-item-icon">{item.icon}</span>
-              <span className="nav-item-label">{item.label}</span>
-              {isActive && <span className="nav-active-indicator" />}
-            </button>
-          );
-        })}
-      </nav>
-
-      {/* AI Assistant Quick Pill */}
-      <div className="sidebar-ai-box">
-        <button className="sidebar-ai-btn" onClick={onOpenAi}>
-          <div className="ai-icon-bubble">✨</div>
-          <div className="ai-box-info">
-            <span className="ai-box-title">Ask Athena AI</span>
-            <span className="ai-box-status">Gemini Flash · Online</span>
+      <aside className={`app-sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+        {/* Brand Header */}
+        <div className="sidebar-brand">
+          <div
+            className="sidebar-brand-left"
+            onClick={() => handleNavClick(isStudent ? 'members' : 'dashboard')}
+          >
+            <div className="brand-circle-logo">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                <path d="M10 7h6"></path>
+                <path d="M10 11h6"></path>
+              </svg>
+            </div>
+            <div className="brand-text-block">
+              <span className="brand-main-title">Library System</span>
+              <span className="brand-role-subtitle">{isStudent ? 'Student Portal' : 'Admin Console'}</span>
+            </div>
           </div>
-        </button>
-      </div>
 
-      {/* Landing Page Link & Logout */}
-      <div className="sidebar-footer">
-        <button className="sidebar-footer-link" onClick={onViewLandingPage}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-          </svg>
-          <span>Landing Page</span>
-        </button>
+          {/* Mobile Close Button */}
+          <button className="sidebar-mobile-close" onClick={onCloseMobileMenu} aria-label="Close menu">
+            &times;
+          </button>
+        </div>
 
-        <button className="sidebar-footer-link logout-btn" onClick={onOpenLoginModal}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-            <polyline points="16 17 21 12 16 7"></polyline>
-            <line x1="21" y1="12" x2="9" y2="12"></line>
-          </svg>
-          <span>Switch Account</span>
-        </button>
-      </div>
-    </aside>
+        {/* Role Switcher Pill */}
+        <div className="role-switch-container">
+          <button
+            className={`role-tab-btn ${!isStudent ? 'active' : ''}`}
+            onClick={() => {
+              setUserRole('librarian');
+              handleNavClick('dashboard');
+            }}
+          >
+            Librarian
+          </button>
+          <button
+            className={`role-tab-btn ${isStudent ? 'active' : ''}`}
+            onClick={() => {
+              setUserRole('student');
+              handleNavClick('members');
+            }}
+          >
+            Student
+          </button>
+        </div>
+
+        {/* Navigation Links */}
+        <nav className="sidebar-nav">
+          {currentNav.map((item) => {
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
+                onClick={() => handleNavClick(item.id)}
+              >
+                <span className="nav-item-icon">{item.icon}</span>
+                <span className="nav-item-label">{item.label}</span>
+                {isActive && <span className="nav-active-indicator" />}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* AI Assistant Quick Pill */}
+        <div className="sidebar-ai-box">
+          <button
+            className="sidebar-ai-btn"
+            onClick={() => {
+              onCloseMobileMenu();
+              onOpenAi();
+            }}
+          >
+            <div className="ai-icon-bubble">✨</div>
+            <div className="ai-box-info">
+              <span className="ai-box-title">Ask Athena AI</span>
+              <span className="ai-box-status">Gemini Flash · Online</span>
+            </div>
+          </button>
+        </div>
+
+        {/* Landing Page Link & Logout */}
+        <div className="sidebar-footer">
+          <button
+            className="sidebar-footer-link"
+            onClick={() => {
+              onCloseMobileMenu();
+              onViewLandingPage();
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span>Landing Page</span>
+          </button>
+
+          <button
+            className="sidebar-footer-link logout-btn"
+            onClick={() => {
+              onCloseMobileMenu();
+              onOpenLoginModal();
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            <span>Switch Account</span>
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }

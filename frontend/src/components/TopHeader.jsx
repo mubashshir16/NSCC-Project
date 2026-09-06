@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 
 export default function TopHeader({
   searchQuery,
@@ -7,7 +7,8 @@ export default function TopHeader({
   onOpenLoginModal,
   onOpenAi,
   isBackendOnline = true,
-  onQuickNavigate
+  onQuickNavigate,
+  onToggleMobileMenu
 }) {
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -27,6 +28,19 @@ export default function TopHeader({
 
   return (
     <header className="app-top-header">
+      {/* Mobile Hamburger Button */}
+      <button
+        className="mobile-hamburger-btn"
+        onClick={onToggleMobileMenu}
+        aria-label="Toggle navigation menu"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+
       {/* Global Search Bar */}
       <div className="header-search-wrapper">
         <svg className="header-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -116,9 +130,9 @@ export default function TopHeader({
             {userRole === 'student' ? '👨‍🎓' : '👨‍💼'}
           </div>
           <div className="user-info-text">
-            <span className="user-display-name">{userRole === 'student' ? 'Arjun R' : 'Librarian'}</span>
+            <span className="user-display-name">{userRole === 'student' ? 'Student' : 'Librarian'}</span>
             <span className="user-display-email">
-              {userRole === 'student' ? 'arjun@library.edu' : 'librarian@library.edu'}
+              {userRole === 'student' ? 'student@library.edu' : 'librarian@library.edu'}
             </span>
           </div>
         </div>

@@ -1361,6 +1361,315 @@ body {
   margin-top: 4px;
 }
 
+/* Mode Switcher: Laptop vs Mobile */
+.scan-mode-tabs {
+  display: flex;
+  background: #f1f5f9;
+  border-radius: var(--radius-md);
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: 24px;
+  width: 100%;
+  max-width: 580px;
+  border: 1px solid var(--card-border);
+}
+
+.scan-mode-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.scan-mode-tab:hover {
+  color: var(--text-main);
+}
+
+.scan-mode-tab.active {
+  background: #ffffff;
+  color: #2563eb;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+/* Device Mode Badges */
+.device-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #bfdbfe;
+  margin-bottom: 12px;
+}
+
+.badge-green {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.badge-dot-blue {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2563eb;
+}
+
+.badge-dot-green {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+}
+
+/* Laptop / Desktop Search Card */
+.laptop-search-card {
+  width: 100%;
+  max-width: 580px;
+  background: #ffffff;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--card-shadow-hover);
+}
+
+.laptop-card-header {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.laptop-card-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.laptop-card-desc {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  max-width: 460px;
+  margin: 0 auto;
+}
+
+.laptop-search-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.search-input-field-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-field-icon {
+  position: absolute;
+  left: 12px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.laptop-search-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 34px 0 38px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  color: var(--text-main);
+  background: #f8fafc;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.laptop-search-input:focus {
+  background: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.clear-btn-mini {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.btn-laptop-search {
+  padding: 0 20px;
+  height: 44px;
+  background: #0f172a;
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.btn-laptop-search:hover {
+  background: #1e293b;
+}
+
+/* Quick Books Picker Chips */
+.laptop-quick-pickers {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--card-border);
+}
+
+.quick-pickers-label {
+  display: block;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+}
+
+.quick-books-chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.quick-book-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #f8fafc;
+  border: 1px solid var(--card-border);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.quick-book-chip:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.chip-book-title {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip-book-stock {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.laptop-footer-hint {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.link-switch-cam {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.link-switch-cam:hover {
+  text-decoration: underline;
+}
+
+/* Mobile Cam Card */
+.mobile-cam-header {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.mobile-cam-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.mobile-cam-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* Live Video in Viewfinder */
+.camera-live-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  inset: 0;
+}
+
+.camera-error-banner {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-sm);
+  color: #dc2626;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.simulated-scan-banner {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  color: #15803d;
+  font-weight: 600;
+  text-align: center;
+}
+
 .scanner-viewfinder-card {
   width: 100%;
   max-width: 540px;
@@ -1428,6 +1737,7 @@ body {
   font-size: 0.72rem;
   color: rgba(255, 255, 255, 0.7);
   font-weight: 500;
+  z-index: 2;
 }
 
 .scanner-buttons-row {
@@ -1522,6 +1832,7 @@ body {
   font-size: 0.8rem;
   color: #ef4444;
   margin-top: 8px;
+  font-weight: 600;
 }
 
 /* Scanned Book Detail View (Screen 6) */
@@ -3298,28 +3609,307 @@ body {
   }
 }
 
+/* Mobile Navigation & Drawer Base */
+.mobile-hamburger-btn {
+  display: none;
+}
+
+.sidebar-mobile-overlay {
+  display: none;
+}
+
+.sidebar-mobile-close {
+  display: none;
+}
+
+.mobile-bottom-nav {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .app-portal-layout {
     flex-direction: column;
+    min-height: 100vh;
   }
-  .app-sidebar {
+
+  .app-main-viewport {
     width: 100%;
-    height: auto;
+    padding-bottom: 74px; /* Space for Mobile Bottom Nav */
   }
-  .sidebar-nav {
-    flex-direction: row;
-    overflow-x: auto;
+
+  /* Mobile Hamburger Button in TopHeader */
+  .mobile-hamburger-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    background: #ffffff;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-main);
+    cursor: pointer;
+    margin-right: 6px;
+    flex-shrink: 0;
   }
-  .sidebar-ai-box, .sidebar-footer {
+
+  .mobile-hamburger-btn:active {
+    background: #f1f5f9;
+  }
+
+  /* Sidebar as Mobile Drawer */
+  .app-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    max-width: 85vw;
+    height: 100vh;
+    z-index: 999;
+    background: #ffffff;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.18);
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .app-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  /* Overlay behind mobile drawer */
+  .sidebar-mobile-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 998;
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  /* Mobile Close Button in Sidebar */
+  .sidebar-mobile-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #f1f5f9;
+    border: none;
+    border-radius: 50%;
+    color: var(--text-main);
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-left: auto;
+  }
+
+  /* Mobile TopHeader */
+  .app-top-header {
+    height: 60px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .header-search-wrapper {
+    flex: 1;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .header-date-badge {
     display: none;
   }
-  .app-top-header {
-    padding: 0 16px;
+
+  .header-user-role-badge,
+  .user-role-label {
+    display: none;
   }
-  .header-search-wrapper {
-    width: 200px;
+
+  .header-user-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.76rem;
   }
+
+  /* Mobile View Content */
   .app-view-content {
-    padding: 16px;
+    padding: 14px 12px;
+  }
+
+  /* Mobile Bottom Navigation Bar */
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 62px;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--card-border);
+    align-items: center;
+    justify-content: space-around;
+    z-index: 900;
+    padding: 0 4px;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+  }
+
+  .mobile-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: none;
+    border: none;
+    color: #64748b;
+    font-size: 0.65rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 6px 2px;
+    border-radius: var(--radius-sm);
+    transition: color 0.15s ease;
+  }
+
+  .mobile-nav-item svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  .mobile-nav-item.active {
+    color: #2563eb;
+  }
+
+  .mobile-nav-scan {
+    position: relative;
+    top: -8px;
+  }
+
+  .mobile-scan-bubble {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #2563eb;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+    transition: transform 0.15s ease;
+  }
+
+  .mobile-scan-bubble:active {
+    transform: scale(0.94);
+  }
+
+  .mobile-scan-bubble svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* Dash stats & cards on mobile */
+  .dash-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 14px;
+  }
+
+  .stat-card-value {
+    font-size: 1.4rem;
+  }
+
+  .quick-action-pills-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  /* Scan QR on mobile */
+  .scan-mode-tabs {
+    flex-direction: column;
+  }
+
+  .scanner-viewfinder-card,
+  .laptop-search-card {
+    padding: 18px 14px;
+  }
+
+  .viewfinder-screen {
+    width: 100%;
+    max-width: 280px;
+    height: 220px;
+  }
+
+  .scanner-buttons-row {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .laptop-search-form {
+    flex-direction: column;
+  }
+
+  .btn-laptop-search {
+    width: 100%;
+  }
+
+  /* Books list on mobile */
+  .books-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .books-filter-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .books-table-wrapper,
+  .tx-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Modal on mobile */
+  .modal-card {
+    width: 95% !important;
+    max-height: 92vh;
+  }
+}
+
+@media (max-width: 480px) {
+  .dash-stats-row {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-hero-content h1 {
+    font-size: 1.75rem;
+  }
+
+  .view-nav-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .scanned-actions-row {
+    flex-direction: column;
+  }
+
+  .btn-issue-primary-lg,
+  .btn-return-secondary-lg {
+    width: 100%;
   }
 }
