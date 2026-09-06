@@ -3393,13 +3393,23 @@ body {
   border-radius: 18px;
   width: 520px;
   max-width: 100%;
-  max-height: 92vh;
+  max-height: 90vh;
   box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   animation: modalPop 0.24s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
+  margin: auto;
+}
+
+.modal-dialog > form,
+.modal-content-card > form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .modal-dialog.modal-large {
@@ -3408,12 +3418,13 @@ body {
 
 /* Modal Header */
 .modal-header {
-  padding: 18px 24px;
+  padding: 16px 22px;
   border-bottom: 1px solid var(--card-border);
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 
 .modal-header-left {
@@ -3470,13 +3481,33 @@ body {
   color: #0f172a;
 }
 
-/* Modal Body */
+/* Modal Body - Smooth Scrolling */
 .modal-body {
-  padding: 22px 24px;
+  padding: 18px 22px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 15px;
+}
+
+.modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 /* Form Error Banner */
@@ -3920,13 +3951,14 @@ label {
 
 /* Modal Footer & Buttons */
 .modal-footer {
-  padding: 16px 24px;
+  padding: 14px 22px;
   border-top: 1px solid var(--card-border);
   background: #f8fafc;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .btn-modal-cancel,
