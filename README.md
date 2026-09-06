@@ -1,6 +1,6 @@
-# 📚 Library Book Issue & Return Management System
+# 📚 LibNexus — Intelligent Library Management & Circulation System
 
-A modern, full-stack, enterprise-grade **Library Management and Circulation System** engineered to streamline book cataloging, circulation tracking, optical QR code issuance, and automated overdue management. Built with **React 19**, **Node.js / Express**, **PostgreSQL**, and **Google Gemini AI**.
+**LibNexus** is a modern, full-stack, enterprise-grade Library Management and Circulation System engineered to streamline book cataloging, circulation tracking, optical QR code issuance, and automated overdue management. Built with **React 19**, **Node.js / Express**, **PostgreSQL**, and **Google Gemini AI**.
 
 ---
 

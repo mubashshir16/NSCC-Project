@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
+import LibNexusLogo from './LibNexusLogo';
 
 export default function LoginModal({
   isOpen,
   onClose,
+  onLogin,
+  onLoginSuccess,
   userRole,
-  onLoginSuccess
+  activeRole = 'librarian'
 }) {
-  const [activeTab, setActiveTab] = useState(userRole || 'librarian');
-  const [email, setEmail] = useState(activeTab === 'student' ? 'student@library.edu' : 'librarian@library.edu');
-  const [password, setPassword] = useState('password123');
+  const initialRole = userRole || activeRole;
+  const [activeTab, setActiveTab] = useState(initialRole);
+  const [email, setEmail] = useState(initialRole === 'student' ? 'student@library.edu' : 'librarian@library.edu');
+  const [password, setPassword] = useState('demo1234');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
@@ -16,7 +20,8 @@ export default function LoginModal({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onLoginSuccess(activeTab);
+    if (onLoginSuccess) onLoginSuccess(activeTab);
+    else if (onLogin) onLogin(activeTab);
     onClose();
   };
 
@@ -26,14 +31,15 @@ export default function LoginModal({
         {/* Left Form Panel */}
         <div className="login-form-panel">
           <div className="login-header">
-            <div className="brand-circle-logo-sm">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-              </svg>
-            </div>
-            <h3 className="login-title">Welcome Back</h3>
-            <p className="login-subtitle">Login to your library account</p>
+            <LibNexusLogo
+              size={36}
+              showText={false}
+              className="login-brand-logo-wrap"
+            />
+            <h3 className="login-title" style={{ marginTop: '8px' }}>
+              Welcome to <span className="libnexus-text-lib text-dark">Lib</span><span className="libnexus-text-nexus">Nexus</span>
+            </h3>
+            <p className="login-subtitle">Sign in to your library account</p>
           </div>
 
           {/* Role Tabs */}

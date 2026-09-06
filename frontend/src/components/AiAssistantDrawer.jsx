@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { api } from "../api/api";
 
 export default function AiAssistantDrawer({
@@ -23,7 +23,7 @@ export default function AiAssistantDrawer({
 
   const [messages, setMessages] = useState([{
     role: "assistant",
-    content: "Hi, I am Athena, your library assistant at NSCC.\n\nAsk me about books in our catalog, get reading recommendations, or tell me about something you have been reading lately.",
+    content: "Hi, I am Athena, your LibNexus AI assistant.\n\nAsk me about books in our catalog, get intelligent reading recommendations, or explore topics you are studying.",
     recommendations: [],
   }]);
   const [inputPrompt, setInputPrompt] = useState("");

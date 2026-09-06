@@ -85,14 +85,116 @@ body {
   user-select: none;
 }
 
+/* ==========================================================================
+   LIBNEXUS BRAND IDENTITY & LOGO SYSTEM
+   ========================================================================== */
+.libnexus-logo-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  user-select: none;
+  cursor: pointer;
+}
+
+.libnexus-logo-mark {
+  flex-shrink: 0;
+  display: block;
+  border-radius: 11px;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), filter 0.28s ease;
+  filter: drop-shadow(0 4px 10px rgba(37, 99, 235, 0.25));
+}
+
+.libnexus-logo-container:hover .libnexus-logo-mark {
+  transform: translateY(-1.5px) scale(1.05);
+  filter: drop-shadow(0 6px 16px rgba(99, 102, 241, 0.4));
+}
+
+.libnexus-text-group {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.libnexus-brand-heading {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  font-family: inherit;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  font-size: 1.18rem;
+}
+
+.libnexus-text-lib {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  transition: color 0.2s ease;
+}
+
+.libnexus-text-lib.text-light {
+  color: #ffffff;
+}
+
+.libnexus-text-lib.text-dark {
+  color: #0f172a;
+}
+
+.libnexus-text-nexus {
+  font-weight: 850;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 55%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.libnexus-core-pill {
+  margin-left: 6px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563eb;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  line-height: 1;
+}
+
+.sidebar-brand .libnexus-core-pill {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border-color: rgba(96, 165, 250, 0.35);
+}
+
+.libnexus-subtitle {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin-top: 2px;
+}
+
+.sidebar-brand .libnexus-subtitle {
+  color: #94a3b8;
+}
+
 /* Sidebar Brand */
 .sidebar-brand {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 20px 18px;
+  padding: 18px 16px;
   cursor: pointer;
   border-bottom: 1px solid var(--sidebar-border);
+}
+
+.sidebar-brand-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
 }
 
 .brand-circle-logo {

@@ -1,4 +1,5 @@
 import React from 'react';
+import LibNexusLogo from './LibNexusLogo';
 
 export default function Navbar({
   activeTab,
@@ -11,22 +12,13 @@ export default function Navbar({
   return (
     <header className="navbar-container">
       {/* Brand Logo & Title */}
-      <div className="navbar-brand" onClick={() => setActiveTab('dashboard')} title="NSCC Library Management System">
-        <div className="brand-logo">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-            <path d="M12 6v6"></path>
-            <path d="M9 9h6"></path>
-          </svg>
-        </div>
-        <div className="brand-info">
-          <div className="brand-title-row">
-            <h1 className="brand-title">NSCC Library</h1>
-            <span className="brand-pill">SYSTEM</span>
-          </div>
-          <span className="brand-sub">Admin &amp; Circulation</span>
-        </div>
+      <div className="navbar-brand" onClick={() => setActiveTab('dashboard')} title="LibNexus Management System">
+        <LibNexusLogo
+          size={34}
+          showText={true}
+          variant="dark"
+          subtitle="Admin & Circulation"
+        />
       </div>
 
       {/* Main Page Navigation Tabs */}

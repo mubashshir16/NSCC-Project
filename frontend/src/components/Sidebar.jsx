@@ -1,4 +1,5 @@
 import React from 'react';
+import LibNexusLogo from './LibNexusLogo';
 
 export default function Sidebar({
   activeTab,
@@ -194,19 +195,14 @@ export default function Sidebar({
           <div
             className="sidebar-brand-left"
             onClick={() => handleNavClick(isStudent ? 'members' : 'dashboard')}
+            title="LibNexus Portal"
           >
-            <div className="brand-circle-logo">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                <path d="M10 7h6"></path>
-                <path d="M10 11h6"></path>
-              </svg>
-            </div>
-            <div className="brand-text-block">
-              <span className="brand-main-title">Library System</span>
-              <span className="brand-role-subtitle">{isStudent ? 'Student Portal' : 'Admin Console'}</span>
-            </div>
+            <LibNexusLogo
+              size={34}
+              showText={true}
+              variant="light"
+              subtitle={isStudent ? 'Student Portal' : 'Admin Console'}
+            />
           </div>
 
           {/* Mobile Close Button */}

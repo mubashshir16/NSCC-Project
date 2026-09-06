@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import LibNexusLogo from './LibNexusLogo';
 
 export default function LandingPage({
   onEnterApp,
@@ -124,15 +125,12 @@ export default function LandingPage({
       {/* Landing Navbar */}
       <nav className="landing-navbar">
         <div className="landing-nav-brand" onClick={(e) => handleNavClick(e, 'hero')} style={{ cursor: 'pointer' }}>
-          <div className="brand-circle-logo">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-              <path d="M10 7h6"></path>
-              <path d="M10 11h6"></path>
-            </svg>
-          </div>
-          <span className="landing-brand-name">Library System</span>
+          <LibNexusLogo
+            size={36}
+            showText={true}
+            variant="dark"
+            subtitle="Library Platform"
+          />
         </div>
 
         <div className="landing-nav-links">
@@ -168,14 +166,10 @@ export default function LandingPage({
 
         <div className="landing-nav-actions">
           <button className="btn-landing-login" onClick={onOpenLogin}>
-            Login
+            <span>Switch Role</span>
           </button>
           <button className="btn-landing-primary" onClick={() => onEnterApp('dashboard')}>
-            <span>Open Dashboard</span>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
+            <span>Enter Library &rarr;</span>
           </button>
         </div>
       </nav>
@@ -185,7 +179,7 @@ export default function LandingPage({
         <div className="hero-content-left">
           <div className="hero-badge">
             <span className="badge-dot"></span>
-            <span>Next-Generation Library Platform</span>
+            <span>Next-Generation LibNexus Platform</span>
           </div>
 
           <h1 className="hero-main-title">
@@ -194,7 +188,7 @@ export default function LandingPage({
           </h1>
 
           <p className="hero-subtitle">
-            A smart library management system to issue, return and track books effortlessly.
+            LibNexus connects students, faculty, and administrators with frictionless book borrowing, instant QR circulation, and Athena AI.
             Seamless cataloging, live PostgreSQL synchronization, and Gemini AI assistance.
           </p>
 
@@ -658,16 +652,15 @@ export default function LandingPage({
         <div className="landing-footer-top">
           <div className="footer-brand-col">
             <div className="footer-brand">
-              <div className="brand-circle-logo">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                </svg>
-              </div>
-              <span className="landing-brand-name">Library System</span>
+              <LibNexusLogo
+                size={34}
+                showText={true}
+                variant="light"
+                subtitle="Next-Gen Library Platform"
+              />
             </div>
             <p className="footer-tagline">
-              Next-generation library platform engineered for students, faculty, and academic librarians.
+              LibNexus is an intelligent library management and circulation platform engineered for students, faculty, and academic librarians.
             </p>
             <div className="footer-system-status">
               <span className="status-indicator-dot online"></span>
@@ -692,7 +685,7 @@ export default function LandingPage({
         </div>
 
         <div className="landing-footer-bottom">
-          <p>&copy; {new Date().getFullYear()} Library System. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} LibNexus. All rights reserved.</p>
           <div className="footer-tech-stack">
             <span>React</span>
             <span>&bull;</span>
