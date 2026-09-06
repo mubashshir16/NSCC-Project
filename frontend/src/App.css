@@ -1105,6 +1105,166 @@ body {
   color: #dc2626;
 }
 
+.btn-qr-icon:hover {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #2563eb;
+}
+
+/* Dashboard Header Actions & Table Tabs */
+.dashboard-header-block {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.dash-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dash-table-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #f1f5f9;
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  border: 1px solid var(--card-border);
+}
+
+.dash-table-tab-btn {
+  background: transparent;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dash-table-tab-btn:hover {
+  color: var(--text-main);
+}
+
+.dash-table-tab-btn.active {
+  background: #ffffff;
+  color: #2563eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* Book QR Code Card in BookDetailsModal */
+.book-qr-generation-card {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-lg);
+  padding: 18px 22px;
+  margin: 18px 0;
+}
+
+.book-qr-preview-box {
+  width: 130px;
+  height: 130px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-md);
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.book-qr-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.book-qr-loading {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.book-qr-meta {
+  flex: 1;
+}
+
+.book-qr-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  margin-bottom: 6px;
+}
+
+.book-qr-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.book-qr-desc {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin-bottom: 12px;
+}
+
+.book-qr-actions-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-qr-download,
+.btn-qr-print {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-qr-download {
+  background: #ffffff;
+  border: 1px solid var(--card-border);
+  color: var(--text-main);
+}
+
+.btn-qr-download:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.btn-qr-print {
+  background: #2563eb;
+  border: 1px solid #2563eb;
+  color: #ffffff;
+}
+
+.btn-qr-print:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
 .btn-action-return {
   padding: 4px 10px;
   background: #2563eb;

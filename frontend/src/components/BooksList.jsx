@@ -252,6 +252,20 @@ export default function BooksList({
                             </button>
                           )}
                           <button
+                            className="icon-action-btn btn-qr-icon"
+                            onClick={() => onViewBookDetails(book.id)}
+                            title="View & Print Unique QR Code"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                              <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                              <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                              <path d="M14 14h3v3h-3z"></path>
+                              <path d="M18 18h3v3h-3z"></path>
+                              <path d="M14 18h2v2h-2z"></path>
+                            </svg>
+                          </button>
+                          <button
                             className="icon-action-btn btn-edit-icon"
                             onClick={() => onEditBook(book)}
                             title="Edit Book"

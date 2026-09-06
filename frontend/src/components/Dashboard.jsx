@@ -1,5 +1,6 @@
-﻿import React from 'react';
+import React, { useState } from 'react';
 import { formatDate } from '../utils/formatDate';
+import { exportTransactionsToCsv } from '../utils/csvExport';
 
 export default function Dashboard({
   stats,
@@ -10,6 +11,8 @@ export default function Dashboard({
   onReturnBook,
   transactions = []
 }) {
+  const [activeDashTab, setActiveDashTab] = useState('recent'); // 'recent' | 'loans'
+
   if (loading && !stats) {
     return (
       <div className="loading-container animate-fade-in">
@@ -42,8 +45,24 @@ export default function Dashboard({
     <div className="dashboard-modern-page animate-fade-in-up">
       {/* Dashboard Top Greeting */}
       <div className="dashboard-header-block">
-        <h2 className="dash-title">Dashboard</h2>
-        <p className="dash-subtitle">Welcome back, Librarian!</p>
+        <div>
+          <h2 className="dash-title">Dashboard</h2>
+          <p className="dash-subtitle">Welcome back, Librarian!</p>
+        </div>
+        <div className="dash-header-actions">
+          <button
+            className="btn-secondary-clean"
+            onClick={() => exportTransactionsToCsv(transactions)}
+            title="Download complete circulation history as CSV"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Download Report (CSV)</span>
+          </button>
+        </div>
       </div>
 
       {/* 4 Core Stat Cards Row */}
@@ -166,11 +185,30 @@ export default function Dashboard({
 
       {/* Two-Column Lower Section (Recent Transactions & Today's Activity) */}
       <div className="dash-two-column-grid">
-        {/* Left: Recent Transactions Table */}
+        {/* Left: Recent Transactions & Active Loans Table */}
         <div className="dash-left-card">
           <div className="card-header-flex">
-            <h3 className="section-title-sm">Recent Transactions</h3>
-            <button className="btn-view-all-link" onClick={() => onNavigate('transactions')}>
+            <div className="dash-table-tabs">
+              <button
+                type="button"
+                className={`dash-table-tab-btn ${activeDashTab === 'recent' ? 'active' : ''}`}
+                onClick={() => setActiveDashTab('recent')}
+              >
+                Recent Activity
+              </button>
+              <button
+                type="button"
+                className={`dash-table-tab-btn ${activeDashTab === 'loans' ? 'active' : ''}`}
+                onClick={() => setActiveDashTab('loans')}
+              >
+                Currently Issued Books ({activeLoans.length})
+              </button>
+            </div>
+
+            <button
+              className="btn-view-all-link"
+              onClick={() => onNavigate(activeDashTab === 'loans' ? 'members' : 'transactions')}
+            >
               <span>View All</span>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -180,48 +218,95 @@ export default function Dashboard({
           </div>
 
           <div className="table-responsive">
-            <table className="custom-table table-compact">
-              <thead>
-                <tr>
-                  <th style={{ width: '45px' }}>#</th>
-                  <th>Book Title</th>
-                  <th>User</th>
-                  <th>Type</th>
-                  <th>Date &amp; Time</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentActivity.length === 0 ? (
+            {activeDashTab === 'recent' ? (
+              <table className="custom-table table-compact">
+                <thead>
                   <tr>
-                    <td colSpan="6" className="text-center py-6 text-muted">
-                      No circulation activity recorded yet.
-                    </td>
+                    <th style={{ width: '45px' }}>#</th>
+                    <th>Book Title</th>
+                    <th>User</th>
+                    <th>Type</th>
+                    <th>Date &amp; Time</th>
+                    <th>Status</th>
                   </tr>
-                ) : (
-                  recentActivity.map((tx, idx) => (
-                    <tr key={tx.id}>
-                      <td><span className="id-badge-sm">{idx + 1}</span></td>
-                      <td className="font-semibold text-main">{tx.book_title || 'Unknown Title'}</td>
-                      <td>
-                        <span className="user-name-cell">{tx.student_name}</span>
-                      </td>
-                      <td>
-                        <span className="type-pill">
-                          {tx.status === 'issued' ? 'Issue' : 'Return'}
-                        </span>
-                      </td>
-                      <td className="text-muted">{formatDate(tx.issue_date)}</td>
-                      <td>
-                        <span className="status-success-tag">
-                          Success
-                        </span>
+                </thead>
+                <tbody>
+                  {recentActivity.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="text-center py-6 text-muted">
+                        No circulation activity recorded yet.
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    recentActivity.map((tx, idx) => (
+                      <tr key={tx.id}>
+                        <td><span className="id-badge-sm">{idx + 1}</span></td>
+                        <td className="font-semibold text-main">{tx.book_title || 'Unknown Title'}</td>
+                        <td>
+                          <span className="user-name-cell">{tx.student_name}</span>
+                        </td>
+                        <td>
+                          <span className="type-pill">
+                            {tx.status === 'issued' ? 'Issue' : 'Return'}
+                          </span>
+                        </td>
+                        <td className="text-muted">{formatDate(tx.issue_date)}</td>
+                        <td>
+                          <span className="status-success-tag">
+                            Success
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            ) : (
+              <table className="custom-table table-compact">
+                <thead>
+                  <tr>
+                    <th style={{ width: '45px' }}>#</th>
+                    <th>Book Title</th>
+                    <th>Borrower (Student)</th>
+                    <th>Student ID</th>
+                    <th>Due Date</th>
+                    <th>Overdue Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activeLoans.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="text-center py-6 text-muted">
+                        No active loans currently checked out.
+                      </td>
+                    </tr>
+                  ) : (
+                    activeLoans.map((loan, idx) => (
+                      <tr key={loan.id}>
+                        <td><span className="id-badge-sm">{idx + 1}</span></td>
+                        <td className="font-semibold text-main">{loan.book_title || 'Unknown Title'}</td>
+                        <td>
+                          <span className="user-name-cell">{loan.student_name}</span>
+                        </td>
+                        <td><code className="isbn-tag">{loan.student_id}</code></td>
+                        <td className="text-muted">{formatDate(loan.due_date)}</td>
+                        <td>
+                          {loan.is_overdue || loan.days_overdue > 0 ? (
+                            <span className="badge-pill badge-pill-outofstock" style={{ fontWeight: 'bold' }}>
+                              ⚠️ {loan.days_overdue} day{loan.days_overdue > 1 ? 's' : ''} overdue
+                            </span>
+                          ) : (
+                            <span className="badge-pill badge-pill-available">
+                              ✓ On Track
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
 

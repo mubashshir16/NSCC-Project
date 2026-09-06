@@ -110,10 +110,26 @@ export default function ScanQRView({
     if (!codeText) return;
     const clean = codeText.trim().toLowerCase();
 
+    // Check if codeText is encoded JSON e.g. {"id":1,"isbn":"...","title":"..."}
+    let parsedId = null;
+    let parsedIsbn = null;
+    try {
+      const parsed = JSON.parse(codeText);
+      if (parsed && typeof parsed === 'object') {
+        if (parsed.id) parsedId = String(parsed.id).trim().toLowerCase();
+        if (parsed.isbn) parsedIsbn = String(parsed.isbn).trim().toLowerCase();
+      }
+    } catch {
+      // Plain string identifier, proceed
+    }
+
     // Look for book by ID, ISBN, or title match
     const found = books.find(
       (b) =>
-        String(b.id) === clean ||
+        (parsedId && String(b.id).toLowerCase() === parsedId) ||
+        (parsedIsbn && b.isbn && b.isbn.toLowerCase() === parsedIsbn) ||
+        String(b.id).toLowerCase() === clean ||
+        (b.isbn && b.isbn.toLowerCase() === clean) ||
         (b.isbn && b.isbn.toLowerCase().includes(clean)) ||
         (b.title && b.title.toLowerCase().includes(clean))
     );

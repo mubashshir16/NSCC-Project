@@ -143,7 +143,7 @@ const exportTransactions = async (req, res, next) => {
 
         const today = new Date().toISOString().split("T")[0];
         res.setHeader("Content-Type", "text/csv; charset=utf-8");
-        res.setHeader("Content-Disposition", `attachment; filename="NSCC_Library_Circulation_${today}.csv"`);
+        res.setHeader("Content-Disposition", `attachment; filename="Library_Circulation_${today}.csv"`);
         res.status(200).send(csvContent);
     } catch (error) {
         next(error);

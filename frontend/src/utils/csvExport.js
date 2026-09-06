@@ -52,7 +52,7 @@ export function exportTransactionsToCsv(transactions, filename = null) {
   const url = URL.createObjectURL(blob);
 
   const today = new Date().toISOString().split("T")[0];
-  const downloadName = filename || `NSCC_Library_Circulation_${today}.csv`;
+  const downloadName = filename || `Library_Circulation_${today}.csv`;
 
   const link = document.createElement("a");
   link.setAttribute("href", url);
