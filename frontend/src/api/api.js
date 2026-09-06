@@ -1,6 +1,13 @@
 // API client service for NSCC Library Management System
 
-const API_BASE = import.meta.env.VITE_API_URL || "/api";
+const rawApiUrl = (import.meta.env.VITE_API_URL || "").trim();
+const normalizeApiBase = (url) => {
+    if (!url) return "/api";
+    const cleanUrl = url.replace(/\/+$/, "");
+    return cleanUrl.endsWith("/api") ? cleanUrl : `${cleanUrl}/api`;
+};
+
+const API_BASE = normalizeApiBase(rawApiUrl);
 
 async function request(endpoint, options = {}) {
     const { headers = {}, ...restOptions } = options;
@@ -18,7 +25,7 @@ async function request(endpoint, options = {}) {
 
         if (!response.ok) {
             if (response.status === 502 || response.status === 503 || response.status === 504) {
-                throw new Error("Backend server is offline. Please ensure the backend is running on port 5000 (cd backend && npm run dev).");
+                throw new Error("Backend server is currently unavailable or waking up from sleep (~30-50s on free tiers). Please wait a moment and refresh.");
             }
             throw new Error(data.message || `Request failed with status ${response.status}`);
         }
@@ -26,7 +33,7 @@ async function request(endpoint, options = {}) {
         return data;
     } catch (error) {
         if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
-            throw new Error("Cannot connect to backend server. Please ensure the backend is running on http://localhost:5000.");
+            throw new Error("Cannot connect to backend server. If the server was idle, it may be waking up. Please wait a moment and try again.");
         }
         console.error(`API Error on ${endpoint}:`, error.message);
         throw error;

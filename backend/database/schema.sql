@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     student_id VARCHAR(100) NOT NULL,
     issue_date DATE NOT NULL DEFAULT CURRENT_DATE,
     return_date DATE,
+    returned_at TIMESTAMP,
     status VARCHAR(50) NOT NULL DEFAULT 'issued',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
