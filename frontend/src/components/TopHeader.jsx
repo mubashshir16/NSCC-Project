@@ -79,18 +79,6 @@ export default function TopHeader({
           <span>{formattedDate}</span>
         </div>
 
-        {/* Database Status Indicator */}
-        <div className={`db-status-chip ${isBackendOnline ? 'online' : 'offline'}`} title={isBackendOnline ? "Database online" : "Database offline"}>
-          <span className="db-dot"></span>
-          <span className="db-label">{isBackendOnline ? 'DB Connected' : 'Offline'}</span>
-        </div>
-
-        {/* AI Quick Button */}
-        <button className="header-ai-pill" onClick={onOpenAi} title="Open Athena AI Librarian">
-          <span className="sparkle-anim">✨</span>
-          <span>Athena AI</span>
-        </button>
-
         {/* Notification Bell */}
         <div className="notification-wrapper">
           <button
