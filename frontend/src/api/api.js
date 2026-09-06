@@ -81,7 +81,10 @@ export const api = {
         return request(`/transactions${queryString ? `?${queryString}` : ""}`);
     },
 
-    getDashboardStats: () => request("/transactions/stats"),
+    getDashboardStats: (tz) => {
+        const timezone = tz || (typeof Intl !== "undefined" && Intl.DateTimeFormat ? Intl.DateTimeFormat().resolvedOptions().timeZone : "Asia/Kolkata");
+        return request(`/transactions/stats?timezone=${encodeURIComponent(timezone || "Asia/Kolkata")}`);
+    },
 
     issueBook: (issueData) => request("/transactions", {
         method: "POST",

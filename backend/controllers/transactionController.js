@@ -324,6 +324,11 @@ const returnBook = async (req, res, next) => {
 // Get Admin Dashboard Statistics & Active Loans with Overdue status
 const getDashboardStats = async (req, res, next) => {
     try {
+        let userTimezone = (req.query.timezone || process.env.TIMEZONE || 'Asia/Kolkata').trim();
+        if (!/^[a-zA-Z0-9_\-+/]+$/.test(userTimezone)) {
+            userTimezone = 'Asia/Kolkata';
+        }
+
         const booksSummary = await pool.query(`
             SELECT 
                 COUNT(*) AS total_titles,
@@ -390,7 +395,7 @@ const getDashboardStats = async (req, res, next) => {
             LIMIT 5
         `);
 
-        // 5. Dynamic Hourly Activity Breakdown for Today (8AM, 12PM, 4PM, 8PM)
+        // 5. Dynamic Hourly Activity Breakdown for Today in User Timezone (8AM, 12PM, 4PM, 8PM)
         const todayHourlyActivity = await pool.query(`
             WITH hourly_slots AS (
                 SELECT '8AM' AS slot, 1 AS ord
@@ -401,27 +406,27 @@ const getDashboardStats = async (req, res, next) => {
             issues_today AS (
                 SELECT 
                     CASE 
-                        WHEN EXTRACT(HOUR FROM created_at) < 11 THEN '8AM'
-                        WHEN EXTRACT(HOUR FROM created_at) < 15 THEN '12PM'
-                        WHEN EXTRACT(HOUR FROM created_at) < 19 THEN '4PM'
+                        WHEN EXTRACT(HOUR FROM ((created_at AT TIME ZONE 'UTC') AT TIME ZONE $1)) < 11 THEN '8AM'
+                        WHEN EXTRACT(HOUR FROM ((created_at AT TIME ZONE 'UTC') AT TIME ZONE $1)) < 15 THEN '12PM'
+                        WHEN EXTRACT(HOUR FROM ((created_at AT TIME ZONE 'UTC') AT TIME ZONE $1)) < 19 THEN '4PM'
                         ELSE '8PM'
                     END AS slot,
                     COUNT(*) AS cnt
                 FROM transactions
-                WHERE (DATE(created_at) = CURRENT_DATE OR issue_date = CURRENT_DATE)
+                WHERE (DATE((created_at AT TIME ZONE 'UTC') AT TIME ZONE $1) = DATE(NOW() AT TIME ZONE $1) OR issue_date = DATE(NOW() AT TIME ZONE $1))
                 GROUP BY 1
             ),
             returns_today AS (
                 SELECT 
                     CASE 
-                        WHEN EXTRACT(HOUR FROM COALESCE(returned_at, created_at)) < 11 THEN '8AM'
-                        WHEN EXTRACT(HOUR FROM COALESCE(returned_at, created_at)) < 15 THEN '12PM'
-                        WHEN EXTRACT(HOUR FROM COALESCE(returned_at, created_at)) < 19 THEN '4PM'
+                        WHEN EXTRACT(HOUR FROM ((COALESCE(returned_at, created_at) AT TIME ZONE 'UTC') AT TIME ZONE $1)) < 11 THEN '8AM'
+                        WHEN EXTRACT(HOUR FROM ((COALESCE(returned_at, created_at) AT TIME ZONE 'UTC') AT TIME ZONE $1)) < 15 THEN '12PM'
+                        WHEN EXTRACT(HOUR FROM ((COALESCE(returned_at, created_at) AT TIME ZONE 'UTC') AT TIME ZONE $1)) < 19 THEN '4PM'
                         ELSE '8PM'
                     END AS slot,
                     COUNT(*) AS cnt
                 FROM transactions
-                WHERE status = 'returned' AND (return_date = CURRENT_DATE OR DATE(returned_at) = CURRENT_DATE)
+                WHERE status = 'returned' AND (return_date = DATE(NOW() AT TIME ZONE $1) OR DATE((COALESCE(returned_at, created_at) AT TIME ZONE 'UTC') AT TIME ZONE $1) = DATE(NOW() AT TIME ZONE $1))
                 GROUP BY 1
             )
             SELECT 
@@ -432,24 +437,24 @@ const getDashboardStats = async (req, res, next) => {
             LEFT JOIN issues_today i ON h.slot = i.slot
             LEFT JOIN returns_today r ON h.slot = r.slot
             ORDER BY h.ord ASC;
-        `);
+        `, [userTimezone]);
 
-        // 6. Dynamic Weekly Activity Breakdown (Last 7 Days)
+        // 6. Dynamic Weekly Activity Breakdown in User Timezone (Last 7 Days)
         const weeklyDailyActivity = await pool.query(`
             SELECT 
                 TO_CHAR(d.date, 'Dy') AS day,
                 TO_CHAR(d.date, 'Mon DD') AS label,
                 TO_CHAR(d.date, 'YYYY-MM-DD') AS date,
-                COALESCE(SUM(CASE WHEN (DATE(t.created_at) = d.date OR t.issue_date = d.date) THEN 1 ELSE 0 END), 0)::INTEGER AS issues,
-                COALESCE(SUM(CASE WHEN t.status = 'returned' AND (t.return_date = d.date OR DATE(t.returned_at) = d.date) THEN 1 ELSE 0 END), 0)::INTEGER AS returns
-            FROM generate_series(CURRENT_DATE - INTERVAL '6 days', CURRENT_DATE, '1 day'::interval) AS d(date)
+                COALESCE(SUM(CASE WHEN (DATE((t.created_at AT TIME ZONE 'UTC') AT TIME ZONE $1) = d.date OR t.issue_date = d.date) THEN 1 ELSE 0 END), 0)::INTEGER AS issues,
+                COALESCE(SUM(CASE WHEN t.status = 'returned' AND (t.return_date = d.date OR DATE((COALESCE(t.returned_at, t.created_at) AT TIME ZONE 'UTC') AT TIME ZONE $1) = d.date) THEN 1 ELSE 0 END), 0)::INTEGER AS returns
+            FROM generate_series(DATE(NOW() AT TIME ZONE $1) - INTERVAL '6 days', DATE(NOW() AT TIME ZONE $1), '1 day'::interval) AS d(date)
             LEFT JOIN transactions t ON (
-                (DATE(t.created_at) = d.date OR t.issue_date = d.date)
-                OR (t.status = 'returned' AND (t.return_date = d.date OR DATE(t.returned_at) = d.date))
+                (DATE((t.created_at AT TIME ZONE 'UTC') AT TIME ZONE $1) = d.date OR t.issue_date = d.date)
+                OR (t.status = 'returned' AND (t.return_date = d.date OR DATE((COALESCE(t.returned_at, t.created_at) AT TIME ZONE 'UTC') AT TIME ZONE $1) = d.date))
             )
             GROUP BY d.date
             ORDER BY d.date ASC;
-        `);
+        `, [userTimezone]);
 
         const bData = booksSummary.rows[0];
         const tData = transactionsSummary.rows[0];
