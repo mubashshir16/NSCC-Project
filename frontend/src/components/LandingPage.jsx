@@ -92,32 +92,77 @@ export default function LandingPage({
     return matchesSearch && matchesCategory;
   });
 
-  // Smooth scroll handler for navbar links
+  const isNavigatingRef = React.useRef(false);
+  const scrollTimeoutRef = React.useRef(null);
+
+  // Smooth scroll handler for navbar links with sticky offset & click lock
   const handleNavClick = (e, sectionId) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setActiveSection(sectionId);
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    isNavigatingRef.current = true;
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+
+    if (sectionId === 'hero') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        // Sticky floating navbar offset (66px navbar + 14px top + 16px buffer = 96px)
+        const navbarOffset = 96;
+        const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+        const targetPosition = Math.max(0, elementPosition - navbarOffset);
+        window.scrollTo({
+          top: targetPosition,
+          behavior: 'smooth'
+        });
+      }
     }
+
+    // Keep active section locked until smooth scroll finishes
+    scrollTimeoutRef.current = setTimeout(() => {
+      isNavigatingRef.current = false;
+    }, 850);
   };
 
   // Observe active section on scroll
   useEffect(() => {
     const sectionIds = ['hero', 'features', 'catalog', 'about'];
     const handleScroll = () => {
-      const scrollPosition = window.scrollY + 140;
+      // Do not override user selection while programmatic smooth scroll is animating
+      if (isNavigatingRef.current) return;
+
+      // 1. If at top of the page, hero is always active
+      if (window.scrollY < 120) {
+        setActiveSection('hero');
+        return;
+      }
+
+      // 2. If at bottom of the page, about is active
+      const isAtBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 60;
+      if (isAtBottom) {
+        setActiveSection('about');
+        return;
+      }
+
+      // 3. Detect current section using accurate boundingClientRect
+      const triggerY = 160;
       for (let i = sectionIds.length - 1; i >= 0; i--) {
         const el = document.getElementById(sectionIds[i]);
-        if (el && el.offsetTop <= scrollPosition) {
-          setActiveSection(sectionIds[i]);
-          break;
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= triggerY && rect.bottom > triggerY) {
+            setActiveSection(sectionIds[i]);
+            break;
+          }
         }
       }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    };
   }, []);
 
   return (

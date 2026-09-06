@@ -78,10 +78,25 @@
 }
 
 /* Reset & Base */
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+#hero,
+#features,
+#catalog,
+#about,
+.landing-section,
+.landing-hero-section {
+  scroll-margin-top: 96px;
 }
 
 body {
@@ -3583,11 +3598,18 @@ body {
   color: var(--text-muted);
   text-decoration: none;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  padding: 8px 16px;
+  padding: 8px 18px;
   border-radius: var(--radius-full);
   cursor: pointer;
   background: transparent;
   border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
 }
 
 .landing-nav-link:hover {
@@ -3596,11 +3618,16 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
+.landing-nav-link:active {
+  transform: translateY(0.5px) scale(0.97);
+}
+
 .landing-nav-link.active {
   color: #ffffff;
   background: var(--nexus-gradient);
   box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
   font-weight: 700;
+  transform: none;
 }
 
 .landing-nav-actions {
