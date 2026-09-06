@@ -21,8 +21,8 @@ app.use("/api/transactions", transactionRoutes);
 app.use("/api/ai", aiRoutes);
 app.get("/api/dashboard/stats", getDashboardStats);
 
-// Health / Database check endpoint
-app.get("/test-db", async (req, res) => {
+// Health / Database check endpoint (available at both /api/test-db and /test-db)
+const handleTestDb = async (req, res) => {
     try {
         const result = await pool.query("SELECT NOW() as current_time, current_database() as db_name");
         res.json({
@@ -38,17 +38,20 @@ app.get("/test-db", async (req, res) => {
             error: error.message
         });
     }
-});
+};
+
+app.get("/api/test-db", handleTestDb);
+app.get("/test-db", handleTestDb);
 
 // Root welcome
 app.get("/", (req, res) => {
     res.json({
-        message: "NSCC Library Management System API is running",
+        message: "Library Management System API is running",
         endpoints: {
             books: "/api/books",
             transactions: "/api/transactions",
             stats: "/api/transactions/stats",
-            testDb: "/test-db"
+            testDb: "/api/test-db"
         }
     });
 });

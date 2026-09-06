@@ -1,11 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import Navbar from './components/Navbar';
+﻿import React, { useState, useEffect, useCallback } from 'react';
+import Sidebar from './components/Sidebar';
+import TopHeader from './components/TopHeader';
+import LandingPage from './components/LandingPage';
 import Dashboard from './components/Dashboard';
 import BooksList from './components/BooksList';
+import ScanQRView from './components/ScanQRView';
+import MembersView from './components/MembersView';
+import SmartSearchView from './components/SmartSearchView';
+import ReportsView from './components/ReportsView';
+import SettingsView from './components/SettingsView';
 import TransactionsList from './components/TransactionsList';
 import BookModal from './components/BookModal';
 import BookDetailsModal from './components/BookDetailsModal';
 import IssueBookModal from './components/IssueBookModal';
+import LoginModal from './components/LoginModal';
 import AiAssistantDrawer from './components/AiAssistantDrawer';
 import Toast from './components/Toast';
 import { api } from './api/api';
@@ -13,9 +21,12 @@ import { exportTransactionsToCsv } from './utils/csvExport';
 import './App.css';
 
 export default function App() {
+  // Navigation & View Mode
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [viewMode, setViewMode] = useState('app'); // 'landing' | 'app'
+  const [userRole, setUserRole] = useState('librarian'); // 'librarian' | 'student'
 
-  // Core Data States
+  // Core Data States from PostgreSQL
   const [stats, setStats] = useState(null);
   const [books, setBooks] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -26,41 +37,34 @@ export default function App() {
   const [loadingBooks, setLoadingBooks] = useState(false);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isBackendOnline, setIsBackendOnline] = useState(true);
 
-  // Books Filter States
+  // Global & Module Filter States
+  const [globalSearch, setGlobalSearch] = useState('');
   const [bookSearch, setBookSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [availabilityFilter, setAvailabilityFilter] = useState('All Books');
-
-  // Transactions Filter States
   const [txSearch, setTxSearch] = useState('');
   const [txStatusFilter, setTxStatusFilter] = useState('all');
 
   // Modals States
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
   const [bookToEdit, setBookToEdit] = useState(null);
-
   const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
   const [presetBook, setPresetBook] = useState(null);
-
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedBookDetails, setSelectedBookDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
-
-  // AI Assistant Drawer State
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isAiOpen, setIsAiOpen] = useState(false);
 
-  // Notification Toast
+  // Toast Notification State
   const [toast, setToast] = useState(null);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
-    setTimeout(() => {
-      setToast(null);
-    }, 4500);
+    setTimeout(() => setToast(null), 4500);
   };
-
-  const [isBackendOnline, setIsBackendOnline] = useState(true);
 
   // 1. Fetch Dashboard Stats
   const loadDashboardStats = useCallback(async () => {
@@ -84,7 +88,7 @@ export default function App() {
     setLoadingBooks(true);
     try {
       const res = await api.getBooks({
-        search: bookSearch,
+        search: bookSearch || globalSearch,
         category: selectedCategory,
         availability: availabilityFilter
       });
@@ -93,11 +97,11 @@ export default function App() {
       }
     } catch (err) {
       console.error('Error fetching books:', err);
-      showToast(err.message || 'Failed to fetch books', 'error');
+      showToast(err.message || 'Failed to fetch books from database', 'error');
     } finally {
       setLoadingBooks(false);
     }
-  }, [bookSearch, selectedCategory, availabilityFilter]);
+  }, [bookSearch, globalSearch, selectedCategory, availabilityFilter]);
 
   // 3. Fetch Distinct Categories
   const loadCategories = useCallback(async () => {
@@ -111,7 +115,7 @@ export default function App() {
     }
   }, []);
 
-  // 4. Fetch Transactions with Filters
+  // 4. Fetch Transactions
   const loadTransactions = useCallback(async () => {
     setLoadingTransactions(true);
     try {
@@ -124,7 +128,6 @@ export default function App() {
       }
     } catch (err) {
       console.error('Error fetching transactions:', err);
-      showToast(err.message || 'Failed to fetch transactions', 'error');
     } finally {
       setLoadingTransactions(false);
     }
@@ -144,7 +147,6 @@ export default function App() {
     loadTransactions();
   }, [loadTransactions]);
 
-  // Refresh everything helper
   const refreshAllData = () => {
     loadDashboardStats();
     loadBooks();
@@ -152,21 +154,17 @@ export default function App() {
     loadTransactions();
   };
 
-  // ==================== ACTIONS ====================
-
-  // Open Add Book Modal
+  // Actions
   const handleOpenAddBook = () => {
     setBookToEdit(null);
     setIsBookModalOpen(true);
   };
 
-  // Open Edit Book Modal
   const handleOpenEditBook = (book) => {
     setBookToEdit(book);
     setIsBookModalOpen(true);
   };
 
-  // Save Book (Add or Edit)
   const handleSaveBook = async (formData) => {
     setIsSubmitting(true);
     try {
@@ -175,7 +173,7 @@ export default function App() {
         showToast(res.message || 'Book updated successfully');
       } else {
         const res = await api.createBook(formData);
-        showToast(res.message || 'Book added to library successfully');
+        showToast(res.message || 'Book registered into catalog successfully');
       }
       setIsBookModalOpen(false);
       setBookToEdit(null);
@@ -187,15 +185,13 @@ export default function App() {
     }
   };
 
-  // Delete Book
   const handleDeleteBook = async (book) => {
     const isLent = book.available_quantity < book.quantity;
     if (isLent) {
       showToast(`Cannot delete "${book.title}": Copies are currently lent to students`, 'error');
       return;
     }
-
-    const confirm = window.confirm(`Are you sure you want to delete "${book.title}" from the library catalog?`);
+    const confirm = window.confirm(`Are you sure you want to remove "${book.title}" from library catalog?`);
     if (!confirm) return;
 
     try {
@@ -207,7 +203,6 @@ export default function App() {
     }
   };
 
-  // View Book Details
   const handleViewBookDetails = async (bookId) => {
     setIsDetailsModalOpen(true);
     setLoadingDetails(true);
@@ -224,7 +219,6 @@ export default function App() {
     }
   };
 
-  // Open Issue Modal (General or Preset)
   const handleOpenIssueBook = () => {
     setPresetBook(null);
     setIsIssueModalOpen(true);
@@ -235,7 +229,6 @@ export default function App() {
     setIsIssueModalOpen(true);
   };
 
-  // Process Issue Book
   const handleIssueBook = async (issueData) => {
     setIsSubmitting(true);
     try {
@@ -251,9 +244,8 @@ export default function App() {
     }
   };
 
-  // Process Return Book
   const handleReturnBook = async (transactionId) => {
-    const confirm = window.confirm('Confirm return of this book to library shelf stock?');
+    const confirm = window.confirm('Confirm return of this book to shelf stock?');
     if (!confirm) return;
 
     try {
@@ -265,7 +257,6 @@ export default function App() {
     }
   };
 
-  // Export CSV Handler
   const handleExportCsv = () => {
     if (transactions.length === 0) {
       showToast('No circulation records to export', 'error');
@@ -273,94 +264,168 @@ export default function App() {
     }
     const success = exportTransactionsToCsv(transactions);
     if (success) {
-      showToast('Circulation report exported to CSV successfully');
+      showToast('Circulation history exported to CSV successfully');
     }
   };
 
+  // If user selected Landing Page view mode (Screen 1 from mockup)
+  if (viewMode === 'landing') {
+    return (
+      <div className="landing-view-root">
+        <Toast toast={toast} onClose={() => setToast(null)} />
+        <LandingPage
+          onEnterApp={() => setViewMode('app')}
+          onOpenLogin={() => setIsLoginModalOpen(true)}
+        />
+        <LoginModal
+          isOpen={isLoginModalOpen}
+          onClose={() => setIsLoginModalOpen(false)}
+          userRole={userRole}
+          onLoginSuccess={(role) => {
+            setUserRole(role);
+            setViewMode('app');
+            showToast(`Logged in as ${role === 'student' ? 'Student Member' : 'Librarian'}`);
+          }}
+        />
+      </div>
+    );
+  }
+
+  // App Layout (Sidebar + TopHeader + Views matching mockup)
   return (
-    <div className="app-layout">
+    <div className="app-portal-layout">
       {/* Toast Notification */}
       <Toast toast={toast} onClose={() => setToast(null)} />
 
-      {/* Top Navbar */}
-      <Navbar
+      {/* Left Sidebar */}
+      <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        onOpenAddBook={handleOpenAddBook}
-        onOpenIssueBook={handleOpenIssueBook}
+        userRole={userRole}
+        setUserRole={setUserRole}
+        onOpenLoginModal={() => setIsLoginModalOpen(true)}
         onOpenAi={() => setIsAiOpen(true)}
-        onExportCsv={handleExportCsv}
+        onViewLandingPage={() => setViewMode('landing')}
       />
 
-      {/* Main Content Area */}
-      <main className="content-container">
-        {activeTab === 'dashboard' && (
-          <Dashboard
-            stats={stats}
-            loading={loadingStats}
-            isBackendOnline={isBackendOnline}
-            onNavigate={(tab) => setActiveTab(tab)}
-            onOpenAddBook={handleOpenAddBook}
-            onOpenIssueBook={handleOpenIssueBook}
-            onReturnBook={handleReturnBook}
-            onExportCsv={handleExportCsv}
-            onOpenAi={() => setIsAiOpen(true)}
-          />
-        )}
+      {/* Main App Body */}
+      <div className="app-main-viewport">
+        {/* Top Header */}
+        <TopHeader
+          searchQuery={globalSearch}
+          onSearchChange={setGlobalSearch}
+          userRole={userRole}
+          onOpenLoginModal={() => setIsLoginModalOpen(true)}
+          onOpenAi={() => setIsAiOpen(true)}
+          isBackendOnline={isBackendOnline}
+          onQuickNavigate={(tab) => setActiveTab(tab)}
+        />
 
-        {activeTab === 'books' && (
-          <BooksList
-            books={books}
-            categories={categories}
-            loading={loadingBooks}
-            searchQuery={bookSearch}
-            onSearch={setBookSearch}
-            selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
-            availabilityFilter={availabilityFilter}
-            onAvailabilityChange={setAvailabilityFilter}
-            onOpenAddBook={handleOpenAddBook}
-            onViewBookDetails={handleViewBookDetails}
-            onEditBook={handleOpenEditBook}
-            onDeleteBook={handleDeleteBook}
-            onIssueBookWithPreset={handleIssueBookWithPreset}
-          />
-        )}
+        {/* Scrollable View Content */}
+        <main className="app-view-content">
+          {activeTab === 'dashboard' && (
+            <Dashboard
+              stats={stats}
+              loading={loadingStats}
+              onNavigate={(tab) => setActiveTab(tab)}
+              onOpenAddBook={handleOpenAddBook}
+              onOpenIssueBook={handleOpenIssueBook}
+              onReturnBook={handleReturnBook}
+              transactions={transactions}
+            />
+          )}
 
-        {activeTab === 'transactions' && (
-          <TransactionsList
-            transactions={transactions}
-            loading={loadingTransactions}
-            statusFilter={txStatusFilter}
-            onStatusChange={setTxStatusFilter}
-            searchQuery={txSearch}
-            onSearch={setTxSearch}
-            onReturnBook={handleReturnBook}
-            onOpenIssueBook={handleOpenIssueBook}
-            onExportCsv={handleExportCsv}
-          />
-        )}
-      </main>
+          {activeTab === 'books' && (
+            <BooksList
+              books={books}
+              categories={categories}
+              loading={loadingBooks}
+              searchQuery={bookSearch}
+              onSearch={setBookSearch}
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+              availabilityFilter={availabilityFilter}
+              onAvailabilityChange={setAvailabilityFilter}
+              onOpenAddBook={handleOpenAddBook}
+              onViewBookDetails={handleViewBookDetails}
+              onEditBook={handleOpenEditBook}
+              onDeleteBook={handleDeleteBook}
+              onIssueBookWithPreset={handleIssueBookWithPreset}
+            />
+          )}
 
-      {/* Floating AI Librarian Launcher */}
-      {!isAiOpen && (
-        <button
-          className="floating-ai-btn"
-          onClick={() => setIsAiOpen(true)}
-          title="Open Athena, your AI Librarian Assistant"
-        >
-          <span className="sparkle-ai">✨</span>
-          <span className="ai-btn-text">Ask AI Librarian</span>
-          <span className="ai-live-badge">Online</span>
-        </button>
-      )}
+          {activeTab === 'scan-qr' && (
+            <ScanQRView
+              books={books}
+              onIssueBookWithPreset={handleIssueBookWithPreset}
+              onReturnBook={handleReturnBook}
+              onViewBookDetails={handleViewBookDetails}
+              transactions={transactions}
+            />
+          )}
 
-      {/* Footer */}
-      <footer className="footer-container">
-        <p>NSCC Library Management System &bull; Powered by React, Node.js &amp; PostgreSQL (library_db)</p>
-      </footer>
+          {activeTab === 'issue-return' && (
+            <ScanQRView
+              books={books}
+              onIssueBookWithPreset={handleIssueBookWithPreset}
+              onReturnBook={handleReturnBook}
+              onViewBookDetails={handleViewBookDetails}
+              transactions={transactions}
+            />
+          )}
 
-      {/* AI Assistant Drawer */}
+          {activeTab === 'transactions' && (
+            <TransactionsList
+              transactions={transactions}
+              loading={loadingTransactions}
+              statusFilter={txStatusFilter}
+              onStatusChange={setTxStatusFilter}
+              searchQuery={txSearch}
+              onSearch={setTxSearch}
+              onReturnBook={handleReturnBook}
+              onOpenIssueBook={handleOpenIssueBook}
+              onExportCsv={handleExportCsv}
+            />
+          )}
+
+          {activeTab === 'members' && (
+            <MembersView
+              transactions={transactions}
+              onReturnBook={handleReturnBook}
+              onOpenIssueBook={handleOpenIssueBook}
+              userRole={userRole}
+            />
+          )}
+
+          {activeTab === 'search-books' && (
+            <SmartSearchView
+              books={books}
+              categories={categories}
+              onIssueBookWithPreset={handleIssueBookWithPreset}
+              onViewBookDetails={handleViewBookDetails}
+            />
+          )}
+
+          {activeTab === 'reports' && (
+            <ReportsView
+              transactions={transactions}
+              books={books}
+              onExportCsv={handleExportCsv}
+            />
+          )}
+
+          {activeTab === 'settings' && (
+            <SettingsView
+              isBackendOnline={isBackendOnline}
+              userRole={userRole}
+              setUserRole={setUserRole}
+              onOpenAi={() => setIsAiOpen(true)}
+            />
+          )}
+        </main>
+      </div>
+
+      {/* AI Assistant Drawer (Athena) */}
       <AiAssistantDrawer
         isOpen={isAiOpen}
         onClose={() => setIsAiOpen(false)}
@@ -393,6 +458,16 @@ export default function App() {
         books={books}
         presetBook={presetBook}
         isSubmitting={isSubmitting}
+      />
+
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        userRole={userRole}
+        onLoginSuccess={(role) => {
+          setUserRole(role);
+          showToast(`Logged in as ${role === 'student' ? 'Student Member' : 'Librarian'}`);
+        }}
       />
     </div>
   );
