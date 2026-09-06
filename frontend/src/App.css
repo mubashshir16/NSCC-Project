@@ -890,25 +890,76 @@ body {
   text-decoration: underline;
 }
 
-/* Today's Activity Bar Chart */
+/* ==========================================================================
+   INTERACTIVE CIRCULATION ACTIVITY BAR CHART
+   ========================================================================== */
 .dash-right-stack {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.chart-legend-row {
+.activity-card-header {
   display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 12px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--text-muted);
+  flex-wrap: wrap;
 }
 
-.legend-item {
+.activity-title-row {
   display: flex;
   align-items: center;
+  gap: 8px;
+}
+
+.live-pulse-badge {
+  display: inline-flex;
+  align-items: center;
   gap: 5px;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #059669;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 2px 7px;
+  border-radius: 9999px;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: live-ping 1.8s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+@keyframes live-ping {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.activity-totals-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.total-stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.74rem;
+  color: #475569;
+}
+
+.total-stat-pill strong {
+  font-weight: 700;
+  color: #0f172a;
 }
 
 .legend-dot {
@@ -920,11 +971,46 @@ body {
 .dot-issues { background: #3b82f6; }
 .dot-returns { background: #10b981; }
 
+/* Range Switcher (Today vs 7 Days) */
+.activity-range-toggle {
+  display: inline-flex;
+  align-items: center;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.range-toggle-btn {
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.range-toggle-btn:hover {
+  color: #0f172a;
+}
+
+.range-toggle-btn.active {
+  background: #ffffff;
+  color: #2563eb;
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
 .activity-bar-chart {
   display: flex;
-  height: 150px;
-  gap: 10px;
-  margin-top: 10px;
+  height: 160px;
+  gap: 12px;
+  margin-top: 14px;
   position: relative;
 }
 
@@ -933,8 +1019,11 @@ body {
   flex-direction: column;
   justify-content: space-between;
   font-size: 0.68rem;
-  color: var(--text-subtle);
-  padding-bottom: 18px;
+  font-weight: 500;
+  color: #94a3b8;
+  padding-bottom: 22px;
+  text-align: right;
+  min-width: 20px;
 }
 
 .chart-bars-wrap {
@@ -942,8 +1031,9 @@ body {
   display: flex;
   justify-content: space-around;
   align-items: flex-end;
-  border-bottom: 1px solid var(--card-border);
+  border-bottom: 1px solid #e2e8f0;
   padding-bottom: 2px;
+  position: relative;
 }
 
 .chart-time-column {
@@ -953,29 +1043,112 @@ body {
   gap: 6px;
   height: 100%;
   justify-content: flex-end;
+  position: relative;
+  cursor: pointer;
+  padding: 0 4px;
+  border-radius: 6px;
+  transition: background-color 0.15s ease;
+}
+
+.chart-time-column:hover {
+  background-color: rgba(241, 245, 249, 0.6);
 }
 
 .dual-bars-group {
   display: flex;
   align-items: flex-end;
-  gap: 4px;
-  height: 110px;
+  gap: 5px;
+  height: 120px;
+  padding-bottom: 2px;
 }
 
 .bar-fill {
-  width: 12px;
-  border-radius: 3px 3px 0 0;
-  transition: height 0.4s ease;
+  width: 14px;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease, transform 0.2s ease;
+  position: relative;
+  display: flex;
+  justify-content: center;
 }
 
-.bar-issues { background: #3b82f6; }
-.bar-returns { background: #10b981; }
+.chart-time-column:hover .bar-fill {
+  transform: scaleY(1.03);
+}
+
+.bar-issues {
+  background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);
+  box-shadow: 0 2px 5px rgba(37, 99, 235, 0.2);
+}
+
+.bar-returns {
+  background: linear-gradient(180deg, #34d399 0%, #059669 100%);
+  box-shadow: 0 2px 5px rgba(5, 150, 105, 0.2);
+}
+
+.bar-number-tag {
+  position: absolute;
+  top: -16px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #475569;
+  line-height: 1;
+  pointer-events: none;
+}
 
 .chart-x-label {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  font-weight: 500;
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 600;
+  white-space: nowrap;
 }
+
+/* Hover Floating Tooltip */
+.chart-tooltip {
+  position: absolute;
+  bottom: calc(100% - 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0f172a;
+  color: #ffffff;
+  padding: 7px 11px;
+  border-radius: 7px;
+  font-size: 0.72rem;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  z-index: 50;
+  pointer-events: none;
+  min-width: 95px;
+}
+
+.chart-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 4px;
+  border-style: solid;
+  border-color: #0f172a transparent transparent transparent;
+}
+
+.tooltip-title {
+  font-weight: 700;
+  color: #94a3b8;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding-bottom: 3px;
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.72rem;
+}
+
+.tooltip-row.text-blue { color: #60a5fa; }
+.tooltip-row.text-emerald { color: #34d399; }
 
 /* Overdue Books Box */
 .dash-overdue-card {

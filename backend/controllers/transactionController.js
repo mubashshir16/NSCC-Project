@@ -281,6 +281,7 @@ const returnBook = async (req, res, next) => {
         const updatedResult = await client.query(
             `UPDATE transactions
              SET return_date = CURRENT_DATE,
+                 returned_at = CURRENT_TIMESTAMP,
                  status = 'returned'
              WHERE id = $1
              RETURNING id, book_id, student_name, student_id, TO_CHAR(issue_date, 'YYYY-MM-DD') as issue_date, TO_CHAR(return_date, 'YYYY-MM-DD') as return_date, status`,
@@ -389,12 +390,76 @@ const getDashboardStats = async (req, res, next) => {
             LIMIT 5
         `);
 
+        // 5. Dynamic Hourly Activity Breakdown for Today (8AM, 12PM, 4PM, 8PM)
+        const todayHourlyActivity = await pool.query(`
+            WITH hourly_slots AS (
+                SELECT '8AM' AS slot, 1 AS ord
+                UNION ALL SELECT '12PM', 2
+                UNION ALL SELECT '4PM', 3
+                UNION ALL SELECT '8PM', 4
+            ),
+            issues_today AS (
+                SELECT 
+                    CASE 
+                        WHEN EXTRACT(HOUR FROM created_at) < 11 THEN '8AM'
+                        WHEN EXTRACT(HOUR FROM created_at) < 15 THEN '12PM'
+                        WHEN EXTRACT(HOUR FROM created_at) < 19 THEN '4PM'
+                        ELSE '8PM'
+                    END AS slot,
+                    COUNT(*) AS cnt
+                FROM transactions
+                WHERE (DATE(created_at) = CURRENT_DATE OR issue_date = CURRENT_DATE)
+                GROUP BY 1
+            ),
+            returns_today AS (
+                SELECT 
+                    CASE 
+                        WHEN EXTRACT(HOUR FROM COALESCE(returned_at, created_at)) < 11 THEN '8AM'
+                        WHEN EXTRACT(HOUR FROM COALESCE(returned_at, created_at)) < 15 THEN '12PM'
+                        WHEN EXTRACT(HOUR FROM COALESCE(returned_at, created_at)) < 19 THEN '4PM'
+                        ELSE '8PM'
+                    END AS slot,
+                    COUNT(*) AS cnt
+                FROM transactions
+                WHERE status = 'returned' AND (return_date = CURRENT_DATE OR DATE(returned_at) = CURRENT_DATE)
+                GROUP BY 1
+            )
+            SELECT 
+                h.slot AS time,
+                COALESCE(i.cnt, 0)::INTEGER AS issues,
+                COALESCE(r.cnt, 0)::INTEGER AS returns
+            FROM hourly_slots h
+            LEFT JOIN issues_today i ON h.slot = i.slot
+            LEFT JOIN returns_today r ON h.slot = r.slot
+            ORDER BY h.ord ASC;
+        `);
+
+        // 6. Dynamic Weekly Activity Breakdown (Last 7 Days)
+        const weeklyDailyActivity = await pool.query(`
+            SELECT 
+                TO_CHAR(d.date, 'Dy') AS day,
+                TO_CHAR(d.date, 'Mon DD') AS label,
+                TO_CHAR(d.date, 'YYYY-MM-DD') AS date,
+                COALESCE(SUM(CASE WHEN (DATE(t.created_at) = d.date OR t.issue_date = d.date) THEN 1 ELSE 0 END), 0)::INTEGER AS issues,
+                COALESCE(SUM(CASE WHEN t.status = 'returned' AND (t.return_date = d.date OR DATE(t.returned_at) = d.date) THEN 1 ELSE 0 END), 0)::INTEGER AS returns
+            FROM generate_series(CURRENT_DATE - INTERVAL '6 days', CURRENT_DATE, '1 day'::interval) AS d(date)
+            LEFT JOIN transactions t ON (
+                (DATE(t.created_at) = d.date OR t.issue_date = d.date)
+                OR (t.status = 'returned' AND (t.return_date = d.date OR DATE(t.returned_at) = d.date))
+            )
+            GROUP BY d.date
+            ORDER BY d.date ASC;
+        `);
+
         const bData = booksSummary.rows[0];
         const tData = transactionsSummary.rows[0];
 
         const totalBooks = parseInt(bData.total_books, 10);
         const availableBooks = parseInt(bData.available_books, 10);
         const issuedBooks = totalBooks - availableBooks;
+
+        const todayIssuesTotal = todayHourlyActivity.rows.reduce((sum, r) => sum + r.issues, 0);
+        const todayReturnsTotal = todayHourlyActivity.rows.reduce((sum, r) => sum + r.returns, 0);
 
         res.json({
             success: true,
@@ -410,7 +475,11 @@ const getDashboardStats = async (req, res, next) => {
                 uniqueStudents: parseInt(tData.unique_students, 10),
                 loanDurationDays: LOAN_DURATION_DAYS,
                 activeLoans: activeLoansResult.rows,
-                recentActivity: recentTransactions.rows
+                recentActivity: recentTransactions.rows,
+                todayActivity: todayHourlyActivity.rows,
+                weeklyActivity: weeklyDailyActivity.rows,
+                todayIssuesTotal: todayIssuesTotal,
+                todayReturnsTotal: todayReturnsTotal
             }
         });
     } catch (error) {

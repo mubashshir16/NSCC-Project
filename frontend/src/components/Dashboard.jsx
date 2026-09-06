@@ -12,6 +12,8 @@ export default function Dashboard({
   transactions = []
 }) {
   const [activeDashTab, setActiveDashTab] = useState('recent'); // 'recent' | 'loans'
+  const [activityRange, setActivityRange] = useState('today'); // 'today' | 'week'
+  const [hoveredBar, setHoveredBar] = useState(null);
 
   if (loading && !stats) {
     return (
@@ -28,18 +30,43 @@ export default function Dashboard({
     issuedBooks = 0,
     overdueCount = 0,
     activeLoans = [],
-    recentActivity = []
+    recentActivity = [],
+    todayActivity = [],
+    weeklyActivity = [],
+    todayIssuesTotal = 0,
+    todayReturnsTotal = 0
   } = stats || {};
 
-  // Mock hourly activity distribution for the "Today's Activity" chart shown in mockup
-  const activityBars = [
-    { time: '8AM', issues: 12, returns: 6 },
-    { time: '12PM', issues: 28, returns: 19 },
-    { time: '4PM', issues: 35, returns: 24 },
-    { time: '8PM', issues: 18, returns: 14 }
+  // Default fallback hourly slots if database is loading or quiet
+  const defaultTodayBars = [
+    { time: '8AM', issues: 0, returns: 0 },
+    { time: '12PM', issues: 0, returns: 0 },
+    { time: '4PM', issues: 0, returns: 0 },
+    { time: '8PM', issues: 0, returns: 0 }
   ];
 
-  const maxActivity = 40;
+  const currentBars = activityRange === 'today'
+    ? (todayActivity.length > 0 ? todayActivity : defaultTodayBars)
+    : (weeklyActivity.length > 0 ? weeklyActivity : []);
+
+  // Calculate dynamic max value with clean padding
+  const peakVal = Math.max(
+    ...currentBars.map(b => Math.max(b.issues || 0, b.returns || 0)),
+    0
+  );
+  // Round up to nearest 5 or 10, minimum 5
+  const maxActivity = Math.max(5, Math.ceil(Math.max(peakVal, 1) / 5) * 5);
+
+  const yTicks = [
+    maxActivity,
+    Math.round(maxActivity * 0.75),
+    Math.round(maxActivity * 0.5),
+    Math.round(maxActivity * 0.25),
+    0
+  ];
+
+  const totalIssuesInRange = currentBars.reduce((sum, b) => sum + (b.issues || 0), 0);
+  const totalReturnsInRange = currentBars.reduce((sum, b) => sum + (b.returns || 0), 0);
 
   return (
     <div className="dashboard-modern-page animate-fade-in-up">
@@ -314,42 +341,111 @@ export default function Dashboard({
         <div className="dash-right-stack">
           {/* Today's Activity Bar Chart Card */}
           <div className="dash-activity-card">
-            <div className="card-header-flex">
-              <h3 className="section-title-sm">Today&apos;s Activity</h3>
-              <div className="chart-legend-row">
-                <span className="legend-item"><span className="legend-dot dot-issues"></span> Issues</span>
-                <span className="legend-item"><span className="legend-dot dot-returns"></span> Returns</span>
+            <div className="card-header-flex activity-card-header">
+              <div>
+                <div className="activity-title-row">
+                  <h3 className="section-title-sm">
+                    {activityRange === 'today' ? "Today's Activity" : "Weekly Activity"}
+                  </h3>
+                  <span className="live-pulse-badge" title="Live circulation stream from PostgreSQL">
+                    <span className="live-dot"></span> LIVE
+                  </span>
+                </div>
+                <div className="activity-totals-summary">
+                  <span className="total-stat-pill issues">
+                    <span className="legend-dot dot-issues"></span>
+                    <strong>{totalIssuesInRange}</strong> Issues
+                  </span>
+                  <span className="total-stat-pill returns">
+                    <span className="legend-dot dot-returns"></span>
+                    <strong>{totalReturnsInRange}</strong> Returns
+                  </span>
+                </div>
+              </div>
+
+              <div className="activity-header-controls">
+                <div className="activity-range-toggle" role="group" aria-label="Activity Time Range">
+                  <button
+                    type="button"
+                    className={`range-toggle-btn ${activityRange === 'today' ? 'active' : ''}`}
+                    onClick={() => setActivityRange('today')}
+                  >
+                    Today
+                  </button>
+                  <button
+                    type="button"
+                    className={`range-toggle-btn ${activityRange === 'week' ? 'active' : ''}`}
+                    onClick={() => setActivityRange('week')}
+                  >
+                    7 Days
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Pure CSS Bar Chart (matching mockup) */}
+            {/* Pure CSS Dynamic Bar Chart */}
             <div className="activity-bar-chart">
               <div className="chart-y-axis">
-                <span>40</span>
-                <span>30</span>
-                <span>20</span>
-                <span>10</span>
-                <span>0</span>
+                {yTicks.map((tick, idx) => (
+                  <span key={idx}>{tick}</span>
+                ))}
               </div>
 
               <div className="chart-bars-wrap">
-                {activityBars.map((bar, i) => (
-                  <div key={i} className="chart-time-column">
-                    <div className="dual-bars-group">
-                      <div
-                        className="bar-fill bar-issues"
-                        style={{ height: `${(bar.issues / maxActivity) * 100}%` }}
-                        title={`${bar.issues} Issues at ${bar.time}`}
-                      ></div>
-                      <div
-                        className="bar-fill bar-returns"
-                        style={{ height: `${(bar.returns / maxActivity) * 100}%` }}
-                        title={`${bar.returns} Returns at ${bar.time}`}
-                      ></div>
+                {currentBars.map((bar, i) => {
+                  const label = bar.time || bar.day || bar.label;
+                  const isHovered = hoveredBar === i;
+                  const issueHeight = maxActivity > 0 ? (bar.issues / maxActivity) * 100 : 0;
+                  const returnHeight = maxActivity > 0 ? (bar.returns / maxActivity) * 100 : 0;
+
+                  return (
+                    <div
+                      key={i}
+                      className={`chart-time-column ${isHovered ? 'column-hovered' : ''}`}
+                      onMouseEnter={() => setHoveredBar(i)}
+                      onMouseLeave={() => setHoveredBar(null)}
+                    >
+                      {/* Floating Tooltip */}
+                      {isHovered && (
+                        <div className="chart-tooltip animate-fade-in">
+                          <div className="tooltip-title">{bar.label ? `${bar.day}, ${bar.label}` : `${label} Window`}</div>
+                          <div className="tooltip-row text-blue">
+                            <span>Issues:</span>
+                            <strong>{bar.issues}</strong>
+                          </div>
+                          <div className="tooltip-row text-emerald">
+                            <span>Returns:</span>
+                            <strong>{bar.returns}</strong>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="dual-bars-group">
+                        <div
+                          className="bar-fill bar-issues"
+                          style={{
+                            height: bar.issues > 0 ? `${Math.max(6, issueHeight)}%` : '3px',
+                            opacity: bar.issues > 0 ? 1 : 0.35
+                          }}
+                          title={`${bar.issues} Issues at ${label}`}
+                        >
+                          {bar.issues > 0 && <span className="bar-number-tag">{bar.issues}</span>}
+                        </div>
+                        <div
+                          className="bar-fill bar-returns"
+                          style={{
+                            height: bar.returns > 0 ? `${Math.max(6, returnHeight)}%` : '3px',
+                            opacity: bar.returns > 0 ? 1 : 0.35
+                          }}
+                          title={`${bar.returns} Returns at ${label}`}
+                        >
+                          {bar.returns > 0 && <span className="bar-number-tag">{bar.returns}</span>}
+                        </div>
+                      </div>
+                      <span className="chart-x-label">{label}</span>
                     </div>
-                    <span className="chart-x-label">{bar.time}</span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
