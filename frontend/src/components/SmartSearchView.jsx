@@ -1,10 +1,11 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 
 export default function SmartSearchView({
   books,
   categories,
   onIssueBookWithPreset,
-  onViewBookDetails
+  onViewBookDetails,
+  userRole = 'librarian'
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -137,12 +138,22 @@ export default function SmartSearchView({
                       {isAvailable ? `${book.available_quantity} Available` : 'Out of Stock'}
                     </span>
 
-                    {isAvailable && onIssueBookWithPreset && (
+                    {userRole !== 'student' ? (
+                      isAvailable && onIssueBookWithPreset && (
+                        <button
+                          className="btn-card-borrow"
+                          onClick={() => onIssueBookWithPreset(book)}
+                        >
+                          Issue
+                        </button>
+                      )
+                    ) : (
                       <button
                         className="btn-card-borrow"
-                        onClick={() => onIssueBookWithPreset(book)}
+                        style={{ background: '#f1f5f9', color: '#1e293b', border: '1px solid #cbd5e1' }}
+                        onClick={() => onViewBookDetails(book.id)}
                       >
-                        Borrow
+                        Details
                       </button>
                     )}
                   </div>

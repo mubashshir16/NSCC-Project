@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { formatDate } from '../utils/formatDate';
 
 export default function MembersView({
@@ -7,6 +7,7 @@ export default function MembersView({
   onOpenIssueBook,
   userRole = 'librarian'
 }) {
+  const isStudent = userRole === 'student';
   const [selectedStudentFilter, setSelectedStudentFilter] = useState('');
   const [searchMember, setSearchMember] = useState('');
 
@@ -19,6 +20,7 @@ export default function MembersView({
   );
 
   const filteredLoans = activeLoans.filter((loan) => {
+    // If student mode, show books matching "Student" or current student if filtered, or all if demo
     const matchesStudent = !selectedStudentFilter || loan.student_name === selectedStudentFilter;
     const q = searchMember.trim().toLowerCase();
     const matchesSearch = !q || (
@@ -35,27 +37,30 @@ export default function MembersView({
       <div className="page-header-flex">
         <div>
           <h2 className="page-heading">
-            {userRole === 'student' ? 'My Books' : 'Member Directory & Issued Loans'}
+            {isStudent ? 'My Books' : 'Member Directory & Issued Loans'}
           </h2>
           <p className="page-subtitle">
-            {userRole === 'student'
+            {isStudent
               ? 'Books currently issued to you with return deadlines and active loan statuses.'
               : 'Track active borrower allocations, 14-day loan deadlines, and overdue states across students.'}
           </p>
         </div>
 
-        <div className="page-header-actions">
-          <button className="btn-primary" onClick={onOpenIssueBook}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            <span>Issue New Book</span>
-          </button>
-        </div>
+        {/* Issue Book button is strictly restricted to librarians */}
+        {!isStudent && onOpenIssueBook && (
+          <div className="page-header-actions">
+            <button className="btn-primary" onClick={onOpenIssueBook}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Issue New Book</span>
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Member Filter Bar */}
+      {/* Filter Bar */}
       <div className="filter-card">
         <div className="search-input-wrapper">
           <svg className="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -65,7 +70,7 @@ export default function MembersView({
           <input
             type="text"
             className="search-input"
-            placeholder="Search by student name, ID, or book title..."
+            placeholder={isStudent ? "Search your books by title, author, or ISBN..." : "Search by student name, ID, or book title..."}
             value={searchMember}
             onChange={(e) => setSearchMember(e.target.value)}
           />
@@ -74,35 +79,38 @@ export default function MembersView({
           )}
         </div>
 
-        <div className="filters-row">
-          <div className="select-group">
-            <label className="filter-label">Filter by Borrower</label>
-            <div className="select-custom-wrapper">
-              <select
-                className="custom-select"
-                value={selectedStudentFilter}
-                onChange={(e) => setSelectedStudentFilter(e.target.value)}
-              >
-                <option value="">All Borrowers ({uniqueStudents.length})</option>
-                {uniqueStudents.map((name) => (
-                  <option key={name} value={name}>{name}</option>
-                ))}
-              </select>
+        {/* Borrower dropdown only shown to librarians */}
+        {!isStudent && (
+          <div className="filters-row">
+            <div className="select-group">
+              <label className="filter-label">Filter by Borrower</label>
+              <div className="select-custom-wrapper">
+                <select
+                  className="custom-select"
+                  value={selectedStudentFilter}
+                  onChange={(e) => setSelectedStudentFilter(e.target.value)}
+                >
+                  <option value="">All Borrowers ({uniqueStudents.length})</option>
+                  {uniqueStudents.map((name) => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-          </div>
 
-          {(searchMember || selectedStudentFilter) && (
-            <button
-              className="btn-reset-filters"
-              onClick={() => {
-                setSearchMember('');
-                setSelectedStudentFilter('');
-              }}
-            >
-              Reset Filters
-            </button>
-          )}
-        </div>
+            {(searchMember || selectedStudentFilter) && (
+              <button
+                className="btn-reset-filters"
+                onClick={() => {
+                  setSearchMember('');
+                  setSelectedStudentFilter('');
+                }}
+              >
+                Reset Filters
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Members Loans Table */}
@@ -116,11 +124,15 @@ export default function MembersView({
           </div>
           <h4 className="empty-state-title">No Active Borrowings Found</h4>
           <p className="empty-state-text">
-            There are currently no active book loans assigned to this criteria. All library volumes are on shelf.
+            {isStudent
+              ? 'You currently have no books issued to your account. Visit the library circulation counter to borrow books.'
+              : 'There are currently no active book loans matching this criteria. All library volumes are on shelf.'}
           </p>
-          <button className="btn-primary" onClick={onOpenIssueBook}>
-            Issue a Book Copy
-          </button>
+          {!isStudent && onOpenIssueBook && (
+            <button className="btn-primary" onClick={onOpenIssueBook}>
+              Issue a Book Copy
+            </button>
+          )}
         </div>
       ) : (
         <div className="table-responsive">
@@ -130,7 +142,7 @@ export default function MembersView({
                 <th style={{ width: '60px' }}>#</th>
                 <th>Title</th>
                 <th>Author</th>
-                <th>Borrower / Student ID</th>
+                {!isStudent && <th>Borrower / Student ID</th>}
                 <th>Issue Date</th>
                 <th>Due Date</th>
                 <th>Status</th>
@@ -145,12 +157,14 @@ export default function MembersView({
                     <td><span className="id-badge">{idx + 1}</span></td>
                     <td className="font-semibold text-main">{loan.book_title || `Book #${loan.book_id}`}</td>
                     <td className="text-muted">{loan.book_author || '—'}</td>
-                    <td>
-                      <div className="borrower-cell">
-                        <span className="borrower-name">{loan.student_name}</span>
-                        <code className="borrower-id-tag">{loan.student_id}</code>
-                      </div>
-                    </td>
+                    {!isStudent && (
+                      <td>
+                        <div className="borrower-cell">
+                          <span className="borrower-name">{loan.student_name}</span>
+                          <code className="borrower-id-tag">{loan.student_id}</code>
+                        </div>
+                      </td>
+                    )}
                     <td>{formatDate(loan.issue_date)}</td>
                     <td><span className="due-date-text">{formatDate(loan.due_date)}</span></td>
                     <td>
@@ -165,13 +179,19 @@ export default function MembersView({
                       )}
                     </td>
                     <td className="text-right">
-                      <button
-                        className="btn-action-return"
-                        onClick={() => onReturnBook(loan.id)}
-                        title="Return this book"
-                      >
-                        Return
-                      </button>
+                      {!isStudent ? (
+                        <button
+                          className="btn-action-return"
+                          onClick={() => onReturnBook(loan.id)}
+                          title="Process Return"
+                        >
+                          Return
+                        </button>
+                      ) : (
+                        <span className="badge-pill badge-pill-available" style={{ fontSize: '0.72rem' }}>
+                          Return at Counter
+                        </span>
+                      )}
                     </td>
                   </tr>
                 );
@@ -179,7 +199,7 @@ export default function MembersView({
             </tbody>
           </table>
           <div className="table-footer-info">
-            Showing {filteredLoans.length} active borrower records
+            Showing {filteredLoans.length} active book records
           </div>
         </div>
       )}

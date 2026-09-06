@@ -7,9 +7,12 @@ export default function BookDetailsModal({
   loading,
   onClose,
   onIssueThisBook,
-  onEditThisBook
+  onEditThisBook,
+  userRole = 'librarian'
 }) {
   if (!isOpen) return null;
+
+  const isStudent = userRole === 'student';
 
   const isAvailable = bookDetails && bookDetails.available_quantity > 0;
   const issuedCopies = bookDetails ? (bookDetails.quantity - bookDetails.available_quantity) : 0;
@@ -108,7 +111,7 @@ export default function BookDetailsModal({
         </div>
 
         <div className="modal-footer">
-          {bookDetails && (
+          {bookDetails && !isStudent && (
             <>
               <button
                 type="button"
@@ -134,6 +137,13 @@ export default function BookDetailsModal({
               </button>
             </>
           )}
+
+          {isStudent && (
+            <span style={{ fontSize: '0.8rem', color: '#64748b', marginRight: 'auto' }}>
+              ℹ️ To borrow this book, please request it from the librarian at the front desk.
+            </span>
+          )}
+
           <button type="button" className="btn-secondary" onClick={onClose}>
             Close
           </button>

@@ -155,18 +155,30 @@ export default function App() {
     loadTransactions();
   };
 
-  // Actions
+  // Actions (Restricted to librarian)
   const handleOpenAddBook = () => {
+    if (userRole === 'student') {
+      showToast('Action restricted: Only library staff are authorized to add books.', 'error');
+      return;
+    }
     setBookToEdit(null);
     setIsBookModalOpen(true);
   };
 
   const handleOpenEditBook = (book) => {
+    if (userRole === 'student') {
+      showToast('Action restricted: Only library staff are authorized to edit books.', 'error');
+      return;
+    }
     setBookToEdit(book);
     setIsBookModalOpen(true);
   };
 
   const handleSaveBook = async (formData) => {
+    if (userRole === 'student') {
+      showToast('Action restricted: Only library staff can save catalog changes.', 'error');
+      return;
+    }
     setIsSubmitting(true);
     try {
       if (bookToEdit) {
@@ -187,6 +199,10 @@ export default function App() {
   };
 
   const handleDeleteBook = async (book) => {
+    if (userRole === 'student') {
+      showToast('Action restricted: Only library staff can delete books.', 'error');
+      return;
+    }
     const isLent = book.available_quantity < book.quantity;
     if (isLent) {
       showToast(`Cannot delete "${book.title}": Copies are currently lent to students`, 'error');
@@ -221,16 +237,28 @@ export default function App() {
   };
 
   const handleOpenIssueBook = () => {
+    if (userRole === 'student') {
+      showToast('Action restricted: Only library staff are authorized to issue books.', 'error');
+      return;
+    }
     setPresetBook(null);
     setIsIssueModalOpen(true);
   };
 
   const handleIssueBookWithPreset = (book) => {
+    if (userRole === 'student') {
+      showToast('Action restricted: Only library staff are authorized to issue books.', 'error');
+      return;
+    }
     setPresetBook(book);
     setIsIssueModalOpen(true);
   };
 
   const handleIssueBook = async (issueData) => {
+    if (userRole === 'student') {
+      showToast('Action restricted: Students cannot issue books directly.', 'error');
+      return;
+    }
     setIsSubmitting(true);
     try {
       const res = await api.issueBook(issueData);
@@ -246,6 +274,10 @@ export default function App() {
   };
 
   const handleReturnBook = async (transactionId) => {
+    if (userRole === 'student') {
+      showToast('Action restricted: Returns must be processed at the library desk.', 'error');
+      return;
+    }
     const confirm = window.confirm('Confirm return of this book to shelf stock?');
     if (!confirm) return;
 
@@ -355,6 +387,7 @@ export default function App() {
               onEditBook={handleOpenEditBook}
               onDeleteBook={handleDeleteBook}
               onIssueBookWithPreset={handleIssueBookWithPreset}
+              userRole={userRole}
             />
           )}
 
@@ -365,6 +398,7 @@ export default function App() {
               onReturnBook={handleReturnBook}
               onViewBookDetails={handleViewBookDetails}
               transactions={transactions}
+              userRole={userRole}
             />
           )}
 
@@ -375,6 +409,7 @@ export default function App() {
               onReturnBook={handleReturnBook}
               onViewBookDetails={handleViewBookDetails}
               transactions={transactions}
+              userRole={userRole}
             />
           )}
 
@@ -389,6 +424,7 @@ export default function App() {
               onReturnBook={handleReturnBook}
               onOpenIssueBook={handleOpenIssueBook}
               onExportCsv={handleExportCsv}
+              userRole={userRole}
             />
           )}
 
@@ -407,6 +443,7 @@ export default function App() {
               categories={categories}
               onIssueBookWithPreset={handleIssueBookWithPreset}
               onViewBookDetails={handleViewBookDetails}
+              userRole={userRole}
             />
           )}
 
@@ -453,6 +490,7 @@ export default function App() {
         onClose={() => setIsDetailsModalOpen(false)}
         onIssueThisBook={handleIssueBookWithPreset}
         onEditThisBook={handleOpenEditBook}
+        userRole={userRole}
       />
 
       <IssueBookModal

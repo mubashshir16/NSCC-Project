@@ -10,8 +10,10 @@ export default function TransactionsList({
   onSearch,
   onReturnBook,
   onOpenIssueBook,
-  onExportCsv
+  onExportCsv,
+  userRole = 'librarian'
 }) {
+  const isStudent = userRole === 'student';
   const isFiltered = searchQuery || statusFilter !== 'all';
 
   return (
@@ -35,14 +37,16 @@ export default function TransactionsList({
             <span>Export CSV</span>
           </button>
 
-          <button className="btn-primary" onClick={onOpenIssueBook}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="8.5" cy="7" r="4"></circle>
-              <polyline points="17 11 19 13 23 9"></polyline>
-            </svg>
-            <span>Issue Book</span>
-          </button>
+          {!isStudent && (
+            <button className="btn-primary" onClick={onOpenIssueBook}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="8.5" cy="7" r="4"></circle>
+                <polyline points="17 11 19 13 23 9"></polyline>
+              </svg>
+              <span>Issue Book</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -214,13 +218,19 @@ export default function TransactionsList({
                     </td>
                     <td className="text-right">
                       {isIssued ? (
-                        <button
-                          className="btn-action-return-sm"
-                          onClick={() => onReturnBook(tx.id)}
-                          title="Process Book Return"
-                        >
-                          Return Book
-                        </button>
+                        !isStudent ? (
+                          <button
+                            className="btn-action-return-sm"
+                            onClick={() => onReturnBook(tx.id)}
+                            title="Process Book Return"
+                          >
+                            Return Book
+                          </button>
+                        ) : (
+                          <span className="badge-pill badge-pill-available" style={{ fontSize: '0.72rem' }}>
+                            Return at Counter
+                          </span>
+                        )
                       ) : (
                         <span className="badge-pill-completed">✓ Completed</span>
                       )}
