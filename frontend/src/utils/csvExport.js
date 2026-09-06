@@ -64,3 +64,55 @@ export function exportTransactionsToCsv(transactions, filename = null) {
 
   return true;
 }
+
+export function exportBooksToCsv(books, filename = null) {
+  if (!books || books.length === 0) {
+    alert("No book records available to export.");
+    return false;
+  }
+
+  const headers = [
+    "Book ID",
+    "Title",
+    "Author",
+    "ISBN",
+    "Category",
+    "Total Quantity",
+    "Available Quantity",
+    "Availability Status"
+  ];
+
+  const escapeCsv = (val) => {
+    if (val === null || val === undefined) return '""';
+    const str = String(val).replace(/"/g, '""');
+    return `"${str}"`;
+  };
+
+  const rows = books.map((b) => [
+    escapeCsv(b.id),
+    escapeCsv(b.title),
+    escapeCsv(b.author),
+    escapeCsv(b.isbn),
+    escapeCsv(b.category),
+    escapeCsv(b.quantity),
+    escapeCsv(b.available_quantity),
+    escapeCsv(b.available_quantity > 0 ? "Available" : "Issued Out")
+  ].join(","));
+
+  const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\r\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const today = new Date().toISOString().split("T")[0];
+  const downloadName = filename || `Library_Inventory_${today}.csv`;
+
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", downloadName);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+
+  return true;
+}
